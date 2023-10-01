@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "eessentials",
+	"version": "${version}",
+	"name": "EEssentials",
+	"description": "Essential Commands for Servers!",
+	"authors": [
+		"complacentsee",
+		"Novoro"
+	],
+	"contact": {
+		"homepage": "https://github.com/AleGuzAva/EEssentials",
+		"sources": "https://github.com/AleGuzAva/EEssentials"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/EEssentials/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"EEssentials.EEssentials"
+		]
+	},
+	"mixins": [
+		"eessentials.mixins.json"
+	],
+	"depends": {
+		"java": ">=17",
+		"minecraft": "~1.20.1",
+		"fabric-api": "*",
+		"fabricloader": ">=0.14.21",
+		"placeholder-api": "*",
+		"luckperms": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
