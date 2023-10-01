@@ -3,6 +3,7 @@ package EEssentials.commands;
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -47,6 +48,11 @@ public class HomeCommands {
         // Delete a home for the player.
         dispatcher.register(literal("delhome")
                 .then(argument("name", StringArgumentType.word())
+                        .suggests((ctx, builder) -> {
+                            ServerPlayerEntity player = ctx.getSource().getPlayer();
+                            Map<String, Location> homes = playerHomes.getOrDefault(player.getUuidAsString(), new HashMap<>());
+                            return CommandSource.suggestMatching(homes.keySet(), builder);
+                        })
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             String homeName = StringArgumentType.getString(ctx, "name");
@@ -56,18 +62,24 @@ public class HomeCommands {
                             if (homes.containsKey(homeName)) {
                                 homes.remove(homeName);
                                 player.sendMessage(Text.literal("Home " + homeName + " deleted!"), false);
+                                return 1;
                             } else {
                                 player.sendMessage(Text.literal("Home " + homeName + " does not exist!"), false);
+                                return 0; // Return a failure code.
                             }
-
-                            return 1;
                         })
                 )
         );
 
+
         // Teleport the player to a specified home.
         dispatcher.register(literal("home")
                 .then(argument("name", StringArgumentType.word())
+                        .suggests((ctx, builder) -> {
+                            ServerPlayerEntity player = ctx.getSource().getPlayer();
+                            Map<String, Location> homes = playerHomes.getOrDefault(player.getUuidAsString(), new HashMap<>());
+                            return CommandSource.suggestMatching(homes.keySet(), builder);
+                        })
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             String homeName = StringArgumentType.getString(ctx, "name");
@@ -77,14 +89,19 @@ public class HomeCommands {
                             if (homes != null && homes.containsKey(homeName)) {
                                 homes.get(homeName).teleport(player);
                                 player.sendMessage(Text.literal("Teleported to home " + homeName + "!"), false);
+                                return 1;
                             } else {
-                                player.sendMessage(Text.literal("Home " + homeName + " does not exist!"), false);
+                                player.sendMessage(Text.literal("Invalid Home. Please do `/home (name)`. To see all available homes, type in `/homes`."), false);
+                                return 0; // Return a failure code.
                             }
-
-                            return 1;
                         })
                 )
+                .executes(ctx -> { // Default behavior if no argument is provided
+                    ctx.getSource().sendError(Text.literal("Invalid Home. Please do `/home (name)`. To see all available warps, type in `/homes`."));
+                    return 0; // Return a failure code.
+                })
         );
+
 
         // List all homes set by the player.
         dispatcher.register(literal("homes")

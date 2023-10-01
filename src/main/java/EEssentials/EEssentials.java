@@ -36,6 +36,7 @@ public class EEssentials implements ModInitializer {
             GamemodeAliasesCommands.register(dispatcher);
             TPACommands.register(dispatcher);
             HomeCommands.register(dispatcher);
+            WarpCommands.register(dispatcher);
         });
 
         // Perform additional setup (e.g., permissions) when the server starts.
