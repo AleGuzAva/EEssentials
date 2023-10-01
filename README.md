@@ -1,4 +1,4 @@
-# Novoro Tags
+# EEssentials
 
 # Description
 A Fabric Essentials Mod
