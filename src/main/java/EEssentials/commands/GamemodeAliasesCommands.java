@@ -3,6 +3,9 @@ package EEssentials.commands;
 import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.command.CommandSource;
+import static net.minecraft.server.command.CommandManager.*;
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -17,10 +20,10 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class GamemodeAliasesCommands {
 
     // Permission nodes for each game mode command.
-    public static final String ADVENTURE_PERMISSION_NODE = "novoroessentials.user.gma";
-    public static final String CREATIVE_PERMISSION_NODE = "novoroessentials.user.gmc";
-    public static final String SPECTATOR_PERMISSION_NODE = "novoroessentials.user.gmsp";
-    public static final String SURVIVAL_PERMISSION_NODE = "novoroessentials.user.gms";
+    public static final String ADVENTURE_PERMISSION_NODE = "eessentials.gamemode.adventure";
+    public static final String CREATIVE_PERMISSION_NODE = "eessentials.gamemode.creative";
+    public static final String SPECTATOR_PERMISSION_NODE = "eessentials.gamemode.spectator";
+    public static final String SURVIVAL_PERMISSION_NODE = "eessentials.gamemode.survival";
 
     /**
      * Registers game mode switching commands.
@@ -32,13 +35,28 @@ public class GamemodeAliasesCommands {
         dispatcher.register(
                 literal("gmc")
                         .requires(source -> hasPermission(source, CREATIVE_PERMISSION_NODE))
-                        .executes(ctx -> executeGameMode(ctx, GameMode.CREATIVE))
+                        .then(argument("target", EntityArgumentType.player())  // Add player argument
+                                .suggests((ctx, builder) -> {
+                                    return CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder);
+                                })
+                                .executes(ctx -> {
+                                    ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
+                                    return executeGameMode(ctx, GameMode.CREATIVE, target);  // Pass the target player to the execute method
+                                }))
+                        .executes(ctx -> executeGameMode(ctx, GameMode.CREATIVE))  // This is for when no player argument is provided.
         );
+
 
         // Registers the /gms command for changing to Survival mode.
         dispatcher.register(
                 literal("gms")
                         .requires(source -> hasPermission(source, SURVIVAL_PERMISSION_NODE))
+                        .then(argument("target", EntityArgumentType.player())
+                                .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
+                                .executes(ctx -> {
+                                    ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
+                                    return executeGameMode(ctx, GameMode.SURVIVAL, target);
+                                }))
                         .executes(ctx -> executeGameMode(ctx, GameMode.SURVIVAL))
         );
 
@@ -46,6 +64,12 @@ public class GamemodeAliasesCommands {
         dispatcher.register(
                 literal("gmsp")
                         .requires(source -> hasPermission(source, SPECTATOR_PERMISSION_NODE))
+                        .then(argument("target", EntityArgumentType.player())
+                                .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
+                                .executes(ctx -> {
+                                    ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
+                                    return executeGameMode(ctx, GameMode.SPECTATOR, target);
+                                }))
                         .executes(ctx -> executeGameMode(ctx, GameMode.SPECTATOR))
         );
 
@@ -53,6 +77,12 @@ public class GamemodeAliasesCommands {
         dispatcher.register(
                 literal("gma")
                         .requires(source -> hasPermission(source, ADVENTURE_PERMISSION_NODE))
+                        .then(argument("target", EntityArgumentType.player())
+                                .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
+                                .executes(ctx -> {
+                                    ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
+                                    return executeGameMode(ctx, GameMode.ADVENTURE, target);
+                                }))
                         .executes(ctx -> executeGameMode(ctx, GameMode.ADVENTURE))
         );
     }
@@ -64,16 +94,35 @@ public class GamemodeAliasesCommands {
      * @param gameMode The target game mode.
      * @return 1 if successful, 0 otherwise.
      */
-    private static int executeGameMode(CommandContext<ServerCommandSource> ctx, GameMode gameMode) {
+    private static int executeGameMode(CommandContext<ServerCommandSource> ctx, GameMode gameMode, ServerPlayerEntity... targets) {
         ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player = source.getPlayer();
+        ServerPlayerEntity player = targets.length > 0 ? targets[0] : source.getPlayer();
+
         if (player == null) return 0;
 
-        // Change the player's game mode and send a message to confirm.
         player.changeGameMode(gameMode);
-        player.sendMessage(Text.literal("Set own game mode to " + gameMode + " Mode").formatted(Formatting.WHITE), false);
+        String formattedGameModeName = formatGameModeName(gameMode);
+
+        if (player.equals(source.getPlayer())) {
+            player.sendMessage(Text.literal("Set own game mode to " + formattedGameModeName + " Mode.").formatted(Formatting.WHITE), false);
+        } else {
+            player.sendMessage(Text.literal("Your game mode has been set to " + formattedGameModeName + " Mode.").formatted(Formatting.WHITE), false);
+            source.sendMessage(Text.literal("Set " + player.getName().getString() + "'s game mode to " + formattedGameModeName + " Mode.").formatted(Formatting.WHITE));
+        }
         return 1;
     }
+
+    /**
+     * Formats the game mode name such that only the first letter is capitalized.
+     *
+     * @param gameMode The game mode to format.
+     * @return The formatted game mode name.
+     */
+    private static String formatGameModeName(GameMode gameMode) {
+        String name = gameMode.name().toLowerCase();
+        return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
+
 
     /**
      * Checks if a player has the required permissions to execute a command.

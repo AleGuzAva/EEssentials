@@ -25,8 +25,7 @@ public class PermissionHelper {
         }
 
         // Check for wildcard permission
-        // If the permission starts with "novoroessentials.user." and the player has "novoroessentials.admin", grant access
-        if (permission.startsWith("novoroessentials.user.") && hasSpecificPermission(player, "novoroessentials.admin")) {
+        if (hasSpecificPermission(player, "eessentials.*")) {
             return true;
         }
 

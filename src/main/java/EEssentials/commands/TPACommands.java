@@ -124,11 +124,67 @@ public class TPACommands {
                     return 1;
                 }));
 
+        // Register /tpyes
+        // Allows a player to accept a pending teleportation request.
+        dispatcher.register(CommandManager.literal("tpyes")
+                .executes(ctx -> {
+                    ServerPlayerEntity target = ctx.getSource().getPlayer();
+
+                    if (teleportRequests.containsKey(target) && !teleportRequests.get(target).isEmpty()) {
+                        TeleportRequest request = teleportRequests.get(target).remove(0);
+                        ServerPlayerEntity requester = request.requester;
+
+                        if (request.type == TeleportRequest.RequestType.TPA) {
+                            Location targetLocation = new Location(target.getServerWorld(), target.getX(), target.getY(), target.getZ());
+                            targetLocation.teleport(requester);
+
+                            requester.sendMessage(Text.literal("You have teleported to " + target.getName().getString() + "."), false);
+                            target.sendMessage(Text.literal(requester.getName().getString() + " has teleported to you."), false);
+                        } else {
+                            Location requesterLocation = new Location(requester.getServerWorld(), requester.getX(), requester.getY(), requester.getZ());
+                            requesterLocation.teleport(target);
+
+                            requester.sendMessage(Text.literal(target.getName().getString() + " has teleported to you."), false);
+                            target.sendMessage(Text.literal("You have teleported to " + requester.getName().getString() + "."), false);
+                        }
+
+                        if (teleportRequests.get(target).isEmpty()) {
+                            teleportRequests.remove(target);
+                        }
+                    } else {
+                        target.sendMessage(Text.literal("No teleportation requests pending."), false);
+                    }
+
+                    return 1;
+                }));
 
 
         // Register /tpdeny
         // Allows a player to deny a pending teleportation request.
         dispatcher.register(CommandManager.literal("tpdeny")
+                .executes(ctx -> {
+                    ServerPlayerEntity target = ctx.getSource().getPlayer();
+
+                    if (teleportRequests.containsKey(target) && !teleportRequests.get(target).isEmpty()) {
+                        TeleportRequest request = teleportRequests.get(target).remove(0); // Remove and get the first request.
+                        ServerPlayerEntity requester = request.requester;
+
+                        requester.sendMessage(Text.literal(target.getName().getString() + " has denied your teleportation request."), false);
+                        target.sendMessage(Text.literal("You have denied " + requester.getName().getString() + "'s teleportation request."), false);
+
+                        if (teleportRequests.get(target).isEmpty()) {
+                            teleportRequests.remove(target);
+                        }
+                    } else {
+                        target.sendMessage(Text.literal("No teleportation requests pending."), false);
+                    }
+
+                    return 1;
+                }));
+
+        // Register /tpno
+        // Allows a player to deny a pending teleportation request.
+        dispatcher.register(CommandManager.literal("tpno")
                 .executes(ctx -> {
                     ServerPlayerEntity target = ctx.getSource().getPlayer();
 

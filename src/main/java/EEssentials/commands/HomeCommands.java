@@ -8,6 +8,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.server.network.ServerPlayerEntity;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,12 +35,11 @@ public class HomeCommands {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             String homeName = StringArgumentType.getString(ctx, "name");
 
-                            // Retrieve or create the home map for the player.
                             Map<String, Location> homes = playerHomes.getOrDefault(player.getUuidAsString(), new HashMap<>());
                             homes.put(homeName, new Location(player.getServerWorld(), player.getX(), player.getY(), player.getZ()));
                             playerHomes.put(player.getUuidAsString(), homes);
 
-                            player.sendMessage(Text.literal("Home " + homeName + " set!"), false);
+                            player.sendMessage(Text.literal("Home " + homeName + " has been set to the current location."), false);
                             return 1;
                         })
                 )
@@ -57,20 +57,18 @@ public class HomeCommands {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             String homeName = StringArgumentType.getString(ctx, "name");
 
-                            // Retrieve the home map for the player and remove the specified home.
                             Map<String, Location> homes = playerHomes.getOrDefault(player.getUuidAsString(), new HashMap<>());
                             if (homes.containsKey(homeName)) {
                                 homes.remove(homeName);
-                                player.sendMessage(Text.literal("Home " + homeName + " deleted!"), false);
+                                player.sendMessage(Text.literal("Home " + homeName + " has been removed."), false);
                                 return 1;
                             } else {
                                 player.sendMessage(Text.literal("Home " + homeName + " does not exist!"), false);
-                                return 0; // Return a failure code.
+                                return 0;
                             }
                         })
                 )
         );
-
 
         // Teleport the player to a specified home.
         dispatcher.register(literal("home")
@@ -84,39 +82,26 @@ public class HomeCommands {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             String homeName = StringArgumentType.getString(ctx, "name");
 
-                            // Retrieve the home map for the player and teleport to the specified home.
                             Map<String, Location> homes = playerHomes.get(player.getUuidAsString());
                             if (homes != null && homes.containsKey(homeName)) {
                                 homes.get(homeName).teleport(player);
-                                player.sendMessage(Text.literal("Teleported to home " + homeName + "!"), false);
+                                player.sendMessage(Text.literal("Teleporting to " + homeName + "."), false);
                                 return 1;
                             } else {
                                 player.sendMessage(Text.literal("Invalid Home. Please do `/home (name)`. To see all available homes, type in `/homes`."), false);
-                                return 0; // Return a failure code.
+                                return 0;
                             }
                         })
                 )
-                .executes(ctx -> { // Default behavior if no argument is provided
-                    ctx.getSource().sendError(Text.literal("Invalid Home. Please do `/home (name)`. To see all available warps, type in `/homes`."));
-                    return 0; // Return a failure code.
-                })
-        );
-
-
-        // List all homes set by the player.
-        dispatcher.register(literal("homes")
                 .executes(ctx -> {
                     ServerPlayerEntity player = ctx.getSource().getPlayer();
-
-                    // Retrieve the home map for the player and list all homes.
                     Map<String, Location> homes = playerHomes.get(player.getUuidAsString());
                     if (homes != null && !homes.isEmpty()) {
                         String homeList = String.join(", ", homes.keySet());
-                        player.sendMessage(Text.literal("Your homes: " + homeList), false);
+                        player.sendMessage(Text.literal("Homes: " + homeList), false);
                     } else {
                         player.sendMessage(Text.literal("You have no homes set."), false);
                     }
-
                     return 1;
                 })
         );
