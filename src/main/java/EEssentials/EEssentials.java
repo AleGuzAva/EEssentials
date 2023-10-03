@@ -4,10 +4,16 @@ import EEssentials.commands.other.PlaytimeCommand;
 import EEssentials.commands.teleportation.*;
 import EEssentials.commands.utility.*;
 import EEssentials.events.ServerTickCallback;
+import EEssentials.storage.StorageManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.luckperms.api.LuckPermsProvider;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +24,8 @@ public class EEssentials implements ModInitializer {
 
     // Logger instance for logging messages related to EEssentials.
     public static final Logger LOGGER = LoggerFactory.getLogger("EEssentials");
+    public static final StorageManager storage =
+            new StorageManager(FabricLoader.getInstance().getConfigDir().resolve("EEsentials"));
 
     // Singleton instance of the mod.
     public static final EEssentials INSTANCE = new EEssentials();
@@ -64,6 +72,15 @@ public class EEssentials implements ModInitializer {
                 tickCounter = 0; // Reset the counter
             }
         });
+
+        ServerPlayConnectionEvents.DISCONNECT.register((ServerPlayNetworkHandler handler, MinecraftServer server) -> {
+            storage.playerLeft(handler.player);
+        });
+
+        ServerPlayConnectionEvents.JOIN.register((ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) -> {
+            storage.playerJoined(handler.player);
+        });
+
     }
 
     /**
