@@ -27,6 +27,7 @@ public class EEssentials implements ModInitializer {
     public static final StorageManager storage =
             new StorageManager(FabricLoader.getInstance().getConfigDir().resolve("EEsentials"));
 
+    public static MinecraftServer server = null;
     // Singleton instance of the mod.
     public static final EEssentials INSTANCE = new EEssentials();
     // Add a tick counter
@@ -62,6 +63,7 @@ public class EEssentials implements ModInitializer {
         // Perform additional setup (e.g., permissions) when the server starts.
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             setupPermissions();
+            this.server = server;
         });
 
         // Register tick listener

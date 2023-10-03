@@ -99,3 +99,4 @@ public class Location {
                 && (z == location.getZ());
     }
 }
+
