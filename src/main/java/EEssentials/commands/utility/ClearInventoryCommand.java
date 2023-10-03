@@ -3,6 +3,7 @@ package EEssentials.commands.utility;
 import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandSource;
 import static net.minecraft.server.command.CommandManager.*;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -28,8 +29,8 @@ public class ClearInventoryCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("clearinventory")
-                        .requires(source -> hasPermission(source, CLEAR_INVENTORY_PERMISSION_NODE))
-                        .executes(ctx -> clearInventory(ctx))  // Clears the inventory of the executing player
+                        .requires(Permissions.require(CLEAR_INVENTORY_PERMISSION_NODE, 2))
+                        .executes(ClearInventoryCommand::clearInventory)  // Clears the inventory of the executing player
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
@@ -41,8 +42,8 @@ public class ClearInventoryCommand {
         // CI is an alias for Clear Inventory
         dispatcher.register(
                 literal("ci")
-                        .requires(source -> hasPermission(source, CLEAR_INVENTORY_PERMISSION_NODE))
-                        .executes(ctx -> clearInventory(ctx))  // Clears the inventory of the executing player
+                        .requires(Permissions.require(CLEAR_INVENTORY_PERMISSION_NODE, 2))
+                        .executes(ClearInventoryCommand::clearInventory)  // Clears the inventory of the executing player
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
@@ -86,14 +87,4 @@ public class ClearInventoryCommand {
         return 1;
     }
 
-    /**
-     * Checks if a player has the required permissions to execute a command.
-     *
-     * @param source The command source.
-     * @param permissionNode The permission node for the command.
-     * @return True if the player has permissions, false otherwise.
-     */
-    private static boolean hasPermission(ServerCommandSource source, String permissionNode) {
-        return source.hasPermissionLevel(2) || PermissionHelper.hasPermission(source.getPlayer(), permissionNode);
-    }
 }

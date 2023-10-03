@@ -5,6 +5,7 @@ import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -28,7 +29,7 @@ public class SpeedCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("speed")
-                        .requires(source -> hasPermission(source, FLY_SPEED_PERMISSION_NODE))
+                        .requires(Permissions.require(FLY_SPEED_PERMISSION_NODE, 2))
                         .then(literal("fly")
                                 .then(argument("speedMultiplier", FloatArgumentType.floatArg(0.1f, 5.0f))
                                         .executes(ctx -> executeSetFlightSpeed(ctx, FloatArgumentType.getFloat(ctx, "speedMultiplier")))
@@ -61,14 +62,4 @@ public class SpeedCommand {
         return 1;
     }
 
-    /**
-     * Checks if the source has the necessary permission to execute the command.
-     *
-     * @param source        The command source.
-     * @param permissionNode The permission node to check against.
-     * @return Returns true if the source has the permission, false otherwise.
-     */
-    private static boolean hasPermission(ServerCommandSource source, String permissionNode) {
-        return source.hasPermissionLevel(2) || PermissionHelper.hasPermission(source.getPlayer(), permissionNode);
-    }
 }

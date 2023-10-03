@@ -5,6 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import static net.minecraft.server.command.CommandManager.*;
 
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -31,7 +32,7 @@ public class EnderchestCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("enderchest")
-                        .requires(source -> hasPermission(source, ENDERCHEST_PERMISSION_NODE))
+                        .requires(Permissions.require(ENDERCHEST_PERMISSION_NODE, 2))
                         .executes(ctx -> openEnderchest(ctx))  // Opens the enderchest for the executing player
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
@@ -72,15 +73,4 @@ public class EnderchestCommand {
         return 1;
     }
 
-
-    /**
-     * Checks if a player has the required permissions to execute a command.
-     *
-     * @param source The command source.
-     * @param permissionNode The permission node for the command.
-     * @return True if the player has permissions, false otherwise.
-     */
-    private static boolean hasPermission(ServerCommandSource source, String permissionNode) {
-        return source.hasPermissionLevel(2) || PermissionHelper.hasPermission(source.getPlayer(), permissionNode);
-    }
 }

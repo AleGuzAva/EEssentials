@@ -3,6 +3,7 @@ package EEssentials.commands.utility;
 import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandSource;
 import static net.minecraft.server.command.CommandManager.*;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -26,7 +27,7 @@ public class FeedCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("feed")
-                        .requires(source -> hasPermission(source, FEED_PERMISSION_NODE))
+                        .requires(Permissions.require(FEED_PERMISSION_NODE, 2))
                         .executes(ctx -> feedPlayer(ctx))  // Feeds the executing player
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
@@ -63,15 +64,4 @@ public class FeedCommand {
         return 1;
     }
 
-
-    /**
-     * Checks if a player has the required permissions to execute a command.
-     *
-     * @param source The command source.
-     * @param permissionNode The permission node for the command.
-     * @return True if the player has permissions, false otherwise.
-     */
-    private static boolean hasPermission(ServerCommandSource source, String permissionNode) {
-        return source.hasPermissionLevel(2) || PermissionHelper.hasPermission(source.getPlayer(), permissionNode);
-    }
 }

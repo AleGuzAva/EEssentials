@@ -3,6 +3,7 @@ package EEssentials.commands.utility;
 import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandSource;
 import static net.minecraft.server.command.CommandManager.*;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -34,7 +35,7 @@ public class GamemodeAliasesCommands {
         // Registers the /gmc command for changing to Creative mode.
         dispatcher.register(
                 literal("gmc")
-                        .requires(source -> hasPermission(source, CREATIVE_PERMISSION_NODE))
+                        .requires(Permissions.require(CREATIVE_PERMISSION_NODE, 2))
                         .then(argument("target", EntityArgumentType.player())  // Add player argument
                                 .suggests((ctx, builder) -> {
                                     return CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder);
@@ -50,7 +51,7 @@ public class GamemodeAliasesCommands {
         // Registers the /gms command for changing to Survival mode.
         dispatcher.register(
                 literal("gms")
-                        .requires(source -> hasPermission(source, SURVIVAL_PERMISSION_NODE))
+                        .requires(Permissions.require(SURVIVAL_PERMISSION_NODE, 2))
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
@@ -63,7 +64,7 @@ public class GamemodeAliasesCommands {
         // Registers the /gmsp command for changing to Spectator mode.
         dispatcher.register(
                 literal("gmsp")
-                        .requires(source -> hasPermission(source, SPECTATOR_PERMISSION_NODE))
+                        .requires(Permissions.require(SPECTATOR_PERMISSION_NODE, 2))
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
@@ -76,7 +77,7 @@ public class GamemodeAliasesCommands {
         // Registers the /gma command for changing to Adventure mode.
         dispatcher.register(
                 literal("gma")
-                        .requires(source -> hasPermission(source, ADVENTURE_PERMISSION_NODE))
+                        .requires(Permissions.require(ADVENTURE_PERMISSION_NODE, 2))
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
@@ -123,15 +124,4 @@ public class GamemodeAliasesCommands {
         return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 
-
-    /**
-     * Checks if a player has the required permissions to execute a command.
-     *
-     * @param source        The command source.
-     * @param permissionNode The permission node for the command.
-     * @return True if the player has permissions, false otherwise.
-     */
-    private static boolean hasPermission(ServerCommandSource source, String permissionNode) {
-        return source.hasPermissionLevel(2) || PermissionHelper.hasPermission(source.getPlayer(), permissionNode);
-    }
 }
