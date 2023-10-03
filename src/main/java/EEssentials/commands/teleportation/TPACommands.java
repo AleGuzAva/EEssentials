@@ -1,4 +1,4 @@
-package EEssentials.commands;
+package EEssentials.commands.teleportation;
 
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;

@@ -1,4 +1,4 @@
-package EEssentials.commands;
+package EEssentials.commands.utility;
 
 import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
