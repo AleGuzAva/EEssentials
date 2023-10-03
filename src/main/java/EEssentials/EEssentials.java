@@ -1,6 +1,7 @@
 package EEssentials;
 
 import EEssentials.commands.*;
+import EEssentials.events.ServerTickCallback;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -18,6 +19,8 @@ public class EEssentials implements ModInitializer {
 
     // Singleton instance of the mod.
     public static final EEssentials INSTANCE = new EEssentials();
+    // Add a tick counter
+    private static int tickCounter = 0;
 
     /**
      * Called during mod initialization.
@@ -38,11 +41,25 @@ public class EEssentials implements ModInitializer {
             HomeCommands.register(dispatcher);
             WarpCommands.register(dispatcher);
             SpawnCommands.register(dispatcher);
+            TopCommand.register(dispatcher);
+            ClearInventoryCommand.register(dispatcher);
+            FeedCommand.register(dispatcher);
+            HealCommand.register(dispatcher);
+            PlaytimeCommand.register(dispatcher);
         });
 
         // Perform additional setup (e.g., permissions) when the server starts.
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             setupPermissions();
+        });
+
+        // Register tick listener
+        ServerTickCallback.EVENT.register(() -> {
+            tickCounter++;
+            if (tickCounter >= 200) { // Every 10 seconds (200 ticks)
+                TPACommands.checkForExpiredRequests();
+                tickCounter = 0; // Reset the counter
+            }
         });
     }
 
@@ -74,4 +91,5 @@ public class EEssentials implements ModInitializer {
             LOGGER.error("Failed to initialize permissions system!", e);
         }
     }
+
 }

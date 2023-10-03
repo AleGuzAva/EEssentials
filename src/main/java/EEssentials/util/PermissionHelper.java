@@ -25,7 +25,7 @@ public class PermissionHelper {
         }
 
         // Check for wildcard permission
-        if (hasSpecificPermission(player, "eessentials.*")) {
+        if (hasSpecificPermission(player, "eessentials.admin")) {
             return true;
         }
 
