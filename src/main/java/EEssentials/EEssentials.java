@@ -58,6 +58,8 @@ public class EEssentials implements ModInitializer {
             HealCommand.register(dispatcher);
             PlaytimeCommand.register(dispatcher);
             EnderchestCommand.register(dispatcher);
+            DisposalCommand.register(dispatcher);
+            InvseeCommand.register(dispatcher);
         });
 
         // Perform additional setup (e.g., permissions) when the server starts.
