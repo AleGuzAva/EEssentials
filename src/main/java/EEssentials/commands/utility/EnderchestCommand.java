@@ -1,81 +1,73 @@
-package EEssentials.commands;
+package EEssentials.commands.utility;
 
 import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.command.CommandSource;
 import static net.minecraft.server.command.CommandManager.*;
+
+import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.stat.Stats;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import java.util.concurrent.TimeUnit;
+import net.minecraft.screen.GenericContainerScreenHandler;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
+import net.minecraft.stat.Stats;
 
 /**
- * Provides command to display player's playtime.
+ * Provides command to open the enderchest.
  */
-public class PlaytimeCommand {
+public class EnderchestCommand {
 
-    // Permission node for the playtime command.
-    public static final String PLAYTIME_PERMISSION_NODE = "eessentials.playtime";
+    // Permission node for the enderchest command.
+    public static final String ENDERCHEST_PERMISSION_NODE = "eessentials.enderchest";
 
     /**
-     * Registers the playtime command.
+     * Registers the enderchest command.
      *
      * @param dispatcher The command dispatcher to register commands on.
      */
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                literal("playtime")
-                        .requires(source -> hasPermission(source, PLAYTIME_PERMISSION_NODE))
-                        .executes(ctx -> showPlaytime(ctx))  // Shows the executing player's playtime
+                literal("enderchest")
+                        .requires(source -> hasPermission(source, ENDERCHEST_PERMISSION_NODE))
+                        .executes(ctx -> openEnderchest(ctx))  // Opens the enderchest for the executing player
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
-                                    return showPlaytime(ctx, target);  // Shows the specified player's playtime
+                                    return openEnderchest(ctx, target);  // Opens the enderchest for the specified player
                                 }))
         );
     }
 
     /**
-     * Displays the playtime of the target player.
+     * Opens the enderchest for the target player.
      *
      * @param ctx The command context.
      * @param targets The target players.
      * @return 1 if successful, 0 otherwise.
      */
-    private static int showPlaytime(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity... targets) {
+    private static int openEnderchest(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity... targets) {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity player = targets.length > 0 ? targets[0] : source.getPlayer();
 
         if (player == null) return 0;
 
-        int timePlayed = player.getStatHandler().getStat(Stats.CUSTOM.getOrCreateStat(Stats.PLAY_TIME));
-        String timeString = formatTime(timePlayed);
+        NamedScreenHandlerFactory screenHandlerFactory = new SimpleNamedScreenHandlerFactory(
+                (syncId, inventory, p) ->
+                        GenericContainerScreenHandler.createGeneric9x3(syncId, inventory, p.getEnderChestInventory()),
+                Text.translatable("container.enderchest")
+        );
+        player.openHandledScreen(screenHandlerFactory);
+        player.incrementStat(Stats.OPEN_ENDERCHEST);
 
-        if (player.equals(source.getPlayer())) {
-            player.sendMessage(Text.of("You've played for: " + timeString), false);
-        } else {
-            source.sendMessage(Text.of(player.getName().getString() + " has played for: " + timeString));
+        if (!player.equals(source.getPlayer())) {
+            source.sendMessage(Text.of("Opened " + player.getName().getString() + "'s enderchest."));
         }
 
         return 1;
-    }
-
-    /**
-     * Formats the given time (in ticks) to a readable format.
-     *
-     * @param ticks The time in ticks.
-     * @return The formatted time string.
-     */
-    private static String formatTime(int ticks) {
-        long seconds = ticks / 20;
-        long days = TimeUnit.SECONDS.toDays(seconds);
-        long hours = TimeUnit.SECONDS.toHours(seconds) - (days * 24);
-        long minutes = TimeUnit.SECONDS.toMinutes(seconds) - (TimeUnit.SECONDS.toHours(seconds) * 60);
-        return String.format("%d days, %d hours, %d minutes", days, hours, minutes);
     }
 
     /**

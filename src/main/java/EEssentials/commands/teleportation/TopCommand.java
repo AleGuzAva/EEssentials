@@ -1,16 +1,13 @@
-package EEssentials.commands;
+package EEssentials.commands.teleportation;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.block.BlockState;
-import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 
 import static net.minecraft.server.command.CommandManager.literal;

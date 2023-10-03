@@ -1,4 +1,4 @@
-package EEssentials.commands;
+package EEssentials.commands.other;
 
 import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
@@ -6,61 +6,76 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandSource;
 import static net.minecraft.server.command.CommandManager.*;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.stat.Stats;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Provides command to feed the player.
+ * Provides command to display player's playtime.
  */
-public class FeedCommand {
+public class PlaytimeCommand {
 
-    // Permission node for the feed command.
-    public static final String FEED_PERMISSION_NODE = "eessentials.feed";
+    // Permission node for the playtime command.
+    public static final String PLAYTIME_PERMISSION_NODE = "eessentials.playtime";
 
     /**
-     * Registers the feed command.
+     * Registers the playtime command.
      *
      * @param dispatcher The command dispatcher to register commands on.
      */
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                literal("feed")
-                        .requires(source -> hasPermission(source, FEED_PERMISSION_NODE))
-                        .executes(ctx -> feedPlayer(ctx))  // Feeds the executing player
+                literal("playtime")
+                        .requires(source -> hasPermission(source, PLAYTIME_PERMISSION_NODE))
+                        .executes(ctx -> showPlaytime(ctx))  // Shows the executing player's playtime
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
-                                    return feedPlayer(ctx, target);  // Feeds the specified player
+                                    return showPlaytime(ctx, target);  // Shows the specified player's playtime
                                 }))
         );
     }
 
     /**
-     * Feeds the target player.
+     * Displays the playtime of the target player.
      *
      * @param ctx The command context.
      * @param targets The target players.
      * @return 1 if successful, 0 otherwise.
      */
-    private static int feedPlayer(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity... targets) {
+    private static int showPlaytime(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity... targets) {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity player = targets.length > 0 ? targets[0] : source.getPlayer();
 
         if (player == null) return 0;
 
-        // Set hunger and saturation to max
-        player.getHungerManager().setFoodLevel(20); // Max hunger level is 20
-        player.getHungerManager().setSaturationLevel(20); // Max saturation level is 20
+        int timePlayed = player.getStatHandler().getStat(Stats.CUSTOM.getOrCreateStat(Stats.PLAY_TIME));
+        String timeString = formatTime(timePlayed);
 
         if (player.equals(source.getPlayer())) {
-            player.sendMessage(Text.of("You have been fed."), false);
+            player.sendMessage(Text.of("You've played for: " + timeString), false);
         } else {
-            source.sendMessage(Text.of("Fed " + player.getName().getString() + "."));
+            source.sendMessage(Text.of(player.getName().getString() + " has played for: " + timeString));
         }
 
         return 1;
+    }
+
+    /**
+     * Formats the given time (in ticks) to a readable format.
+     *
+     * @param ticks The time in ticks.
+     * @return The formatted time string.
+     */
+    private static String formatTime(int ticks) {
+        long seconds = ticks / 20;
+        long days = TimeUnit.SECONDS.toDays(seconds);
+        long hours = TimeUnit.SECONDS.toHours(seconds) - (days * 24);
+        long minutes = TimeUnit.SECONDS.toMinutes(seconds) - (TimeUnit.SECONDS.toHours(seconds) * 60);
+        return String.format("%d days, %d hours, %d minutes", days, hours, minutes);
     }
 
     /**
