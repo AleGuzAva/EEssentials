@@ -43,7 +43,7 @@ public class EnderchestCommand {
     }
 
     /**
-     * Opens the enderchest for the target player.
+     * Opens the target player's enderchest.
      *
      * @param ctx The command context.
      * @param targets The target players.
@@ -51,24 +51,27 @@ public class EnderchestCommand {
      */
     private static int openEnderchest(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity... targets) {
         ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player = targets.length > 0 ? targets[0] : source.getPlayer();
+        ServerPlayerEntity executingPlayer = source.getPlayer();
+        ServerPlayerEntity targetPlayer = targets.length > 0 ? targets[0] : executingPlayer;
 
-        if (player == null) return 0;
+        if (executingPlayer == null || targetPlayer == null) return 0;
 
         NamedScreenHandlerFactory screenHandlerFactory = new SimpleNamedScreenHandlerFactory(
                 (syncId, inventory, p) ->
-                        GenericContainerScreenHandler.createGeneric9x3(syncId, inventory, p.getEnderChestInventory()),
+                        GenericContainerScreenHandler.createGeneric9x3(syncId, inventory, targetPlayer.getEnderChestInventory()),
                 Text.translatable("container.enderchest")
         );
-        player.openHandledScreen(screenHandlerFactory);
-        player.incrementStat(Stats.OPEN_ENDERCHEST);
 
-        if (!player.equals(source.getPlayer())) {
-            source.sendMessage(Text.of("Opened " + player.getName().getString() + "'s enderchest."));
+        executingPlayer.openHandledScreen(screenHandlerFactory);
+        executingPlayer.incrementStat(Stats.OPEN_ENDERCHEST);
+
+        if (!executingPlayer.equals(targetPlayer)) {
+            source.sendMessage(Text.of("Opening " + targetPlayer.getName().getString() + "'s enderchest."));
         }
 
         return 1;
     }
+
 
     /**
      * Checks if a player has the required permissions to execute a command.
