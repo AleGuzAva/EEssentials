@@ -1,16 +1,24 @@
 package EEssentials.commands.teleportation;
 
+import EEssentials.EEssentials;
+import EEssentials.storage.PlayerStorage;
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.lwjgl.opengl.EXTBlendEquationSeparate;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.server.command.CommandManager.*;
 
@@ -18,9 +26,6 @@ import static net.minecraft.server.command.CommandManager.*;
  * Defines the /home related commands to manage player homes.
  */
 public class HomeCommands {
-
-    // A map storing each player's homes. Key is the UUID of the player, value is another map with home names as keys and locations as values.
-    private static final Map<String, Map<String, Location>> playerHomes = new HashMap<>();
 
     /**
      * Registers home related commands (/sethome, /delhome, /home, /homes).
@@ -34,10 +39,15 @@ public class HomeCommands {
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             String homeName = StringArgumentType.getString(ctx, "name");
+                            if (player == null) return 0;
 
-                            Map<String, Location> homes = playerHomes.getOrDefault(player.getUuidAsString(), new HashMap<>());
-                            homes.put(homeName, new Location(player.getServerWorld(), player.getX(), player.getY(), player.getZ()));
-                            playerHomes.put(player.getUuidAsString(), homes);
+                            PlayerStorage playerStorage = EEssentials.storage.getPlayerStorage(player);
+
+                            playerStorage.homes.put(
+                                    homeName,
+                                    Location.fromPlayer(player)
+                            );
+                            playerStorage.save();
 
                             player.sendMessage(Text.literal("Home " + homeName + " has been set to the current location."), false);
                             return 1;
@@ -48,18 +58,18 @@ public class HomeCommands {
         // Delete a home for the player.
         dispatcher.register(literal("delhome")
                 .then(argument("name", StringArgumentType.word())
-                        .suggests((ctx, builder) -> {
-                            ServerPlayerEntity player = ctx.getSource().getPlayer();
-                            Map<String, Location> homes = playerHomes.getOrDefault(player.getUuidAsString(), new HashMap<>());
-                            return CommandSource.suggestMatching(homes.keySet(), builder);
-                        })
+                        .suggests(HomeCommands::suggestHomes)
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             String homeName = StringArgumentType.getString(ctx, "name");
+                            if (player == null) return 0;
 
-                            Map<String, Location> homes = playerHomes.getOrDefault(player.getUuidAsString(), new HashMap<>());
-                            if (homes.containsKey(homeName)) {
-                                homes.remove(homeName);
+                            PlayerStorage playerStorage = EEssentials.storage.getPlayerStorage(player);
+
+                            Location location = playerStorage.homes.remove(homeName);
+                            playerStorage.save();
+
+                            if (location != null) {
                                 player.sendMessage(Text.literal("Home " + homeName + " has been removed."), false);
                                 return 1;
                             } else {
@@ -73,18 +83,16 @@ public class HomeCommands {
         // Teleport the player to a specified home.
         dispatcher.register(literal("home")
                 .then(argument("name", StringArgumentType.word())
-                        .suggests((ctx, builder) -> {
-                            ServerPlayerEntity player = ctx.getSource().getPlayer();
-                            Map<String, Location> homes = playerHomes.getOrDefault(player.getUuidAsString(), new HashMap<>());
-                            return CommandSource.suggestMatching(homes.keySet(), builder);
-                        })
+                        .suggests(HomeCommands::suggestHomes)
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             String homeName = StringArgumentType.getString(ctx, "name");
+                            if (player == null) return 0;
 
-                            Map<String, Location> homes = playerHomes.get(player.getUuidAsString());
-                            if (homes != null && homes.containsKey(homeName)) {
-                                homes.get(homeName).teleport(player);
+                            PlayerStorage playerStorage = EEssentials.storage.getPlayerStorage(player);
+                            Location location = playerStorage.homes.get(homeName);
+                            if (location != null) {
+                                location.teleport(player);
                                 player.sendMessage(Text.literal("Teleporting to " + homeName + "."), false);
                                 return 1;
                             } else {
@@ -95,15 +103,24 @@ public class HomeCommands {
                 )
                 .executes(ctx -> {
                     ServerPlayerEntity player = ctx.getSource().getPlayer();
-                    Map<String, Location> homes = playerHomes.get(player.getUuidAsString());
-                    if (homes != null && !homes.isEmpty()) {
-                        String homeList = String.join(", ", homes.keySet());
-                        player.sendMessage(Text.literal("Homes: " + homeList), false);
-                    } else {
+                    if (player == null) return 0;
+
+                    PlayerStorage playerStorage = EEssentials.storage.getPlayerStorage(player);
+                    if (playerStorage.homes.isEmpty()) {
                         player.sendMessage(Text.literal("You have no homes set."), false);
+                    } else {
+                        player.sendMessage(Text.literal("Homes: " + String.join(", ", playerStorage.homes.keySet())));
                     }
+
                     return 1;
                 })
         );
     }
+
+    public static CompletableFuture<Suggestions> suggestHomes(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) {
+        ServerPlayerEntity player = ctx.getSource().getPlayer();
+        if (player == null) return CommandSource.suggestMatching(new String[]{""}, builder);
+        return CommandSource.suggestMatching(EEssentials.storage.getPlayerStorage(ctx.getSource().getPlayer().getUuid()).homes.keySet(), builder);
+    }
+
 }

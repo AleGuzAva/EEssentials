@@ -19,4 +19,8 @@ public class PlayerStorage {
         return new PlayerStorage(player.getUuid());
     }
 
+    public void save() {
+        // TODO save
+    }
+
 }

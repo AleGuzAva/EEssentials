@@ -37,6 +37,10 @@ public class Location {
         this.yaw = yaw;
     }
 
+    public static Location fromPlayer(ServerPlayerEntity player) {
+        return new Location(player.getServerWorld(), player.getX(), player.getY(), player.getZ());
+    }
+
     // Basic getter methods below...
 
     public ServerWorld getWorld() {
