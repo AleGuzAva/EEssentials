@@ -1,4 +1,4 @@
-package EEssentials.commands;
+package EEssentials.commands.utility;
 
 import EEssentials.mixins.PlayerAbilitiesMixin;
 import EEssentials.util.PermissionHelper;

@@ -1,4 +1,4 @@
-package EEssentials.commands;
+package EEssentials.commands.utility;
 
 import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
@@ -62,6 +62,7 @@ public class FeedCommand {
 
         return 1;
     }
+
 
     /**
      * Checks if a player has the required permissions to execute a command.

@@ -1,6 +1,8 @@
 package EEssentials;
 
-import EEssentials.commands.*;
+import EEssentials.commands.other.PlaytimeCommand;
+import EEssentials.commands.teleportation.*;
+import EEssentials.commands.utility.*;
 import EEssentials.events.ServerTickCallback;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -46,6 +48,7 @@ public class EEssentials implements ModInitializer {
             FeedCommand.register(dispatcher);
             HealCommand.register(dispatcher);
             PlaytimeCommand.register(dispatcher);
+            EnderchestCommand.register(dispatcher);
         });
 
         // Perform additional setup (e.g., permissions) when the server starts.
