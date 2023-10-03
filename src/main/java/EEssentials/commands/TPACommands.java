@@ -8,10 +8,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Contains teleport-related commands including sending, accepting, and denying teleportation requests.
@@ -21,10 +18,12 @@ public class TPACommands {
     private static class TeleportRequest {
         final ServerPlayerEntity requester;
         final RequestType type;
+        final long timestamp; // Timestamp when the request was created
 
         public TeleportRequest(ServerPlayerEntity requester, RequestType type) {
             this.requester = requester;
             this.type = type;
+            this.timestamp = System.currentTimeMillis(); // Capture the current time
         }
 
         enum RequestType {
@@ -253,5 +252,40 @@ public class TPACommands {
             }
         }
     }
+
+    private static final long TIMEOUT_DURATION = 2 * 60 * 1000; // 2 minutes in milliseconds
+
+    public static void checkForExpiredRequests() {
+        long currentTimestamp = System.currentTimeMillis();
+        List<ServerPlayerEntity> emptyKeys = new ArrayList<>(); // List to hold players with no active requests
+
+        teleportRequests.forEach((target, requests) -> {
+            Iterator<TeleportRequest> iterator = requests.iterator();
+
+            while (iterator.hasNext()) {
+                TeleportRequest request = iterator.next();
+
+                if ((currentTimestamp - request.timestamp) > TIMEOUT_DURATION) {
+                    // Notify both the requester and the target
+                    request.requester.sendMessage(Text.literal("Your teleport request to " + target.getName().getString() + " has expired."), false);
+                    target.sendMessage(Text.literal(request.requester.getName().getString() + "'s teleport request has expired."), false);
+
+                    iterator.remove();
+                }
+            }
+
+            if (requests.isEmpty()) {
+                emptyKeys.add(target);
+            }
+        });
+
+        // Now remove the players from teleportRequests
+        for (ServerPlayerEntity key : emptyKeys) {
+            teleportRequests.remove(key);
+        }
+    }
+
+
+
 
 }

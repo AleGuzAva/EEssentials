@@ -2,9 +2,11 @@ package EEssentials.commands;
 
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.command.argument.EntityArgumentType;
 
 import static net.minecraft.server.command.CommandManager.*;
 
@@ -35,20 +37,35 @@ public class SpawnCommands {
                 })
         );
 
-        // Teleport the player to the universal spawn location.
+        // Teleport the player or the target to the universal spawn location.
         dispatcher.register(literal("spawn")
-                .executes(ctx -> {
-                    ServerPlayerEntity player = ctx.getSource().getPlayer();
-
-                    if (spawnLocation != null) {
-                        spawnLocation.teleport(player);
-                        player.sendMessage(Text.literal("Teleporting to spawn."), false);
-                        return 1;
-                    } else {
-                        player.sendMessage(Text.literal("Spawn Location not found."), false);
-                        return 0; // Return a failure code.
-                    }
-                })
+                .executes(ctx -> teleportToSpawn(ctx)) // Teleport the executing player
+                .then(argument("target", EntityArgumentType.player())
+                        .executes(ctx -> {
+                            ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
+                            return teleportToSpawn(ctx, target);  // Teleport the specified player
+                        }))
         );
     }
+
+    private static int teleportToSpawn(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity... targets) {
+        ServerCommandSource source = ctx.getSource();
+        ServerPlayerEntity player = targets.length > 0 ? targets[0] : ctx.getSource().getPlayer();
+
+        if (spawnLocation != null) {
+            spawnLocation.teleport(player);
+
+            if (player.equals(source.getPlayer())) {
+                player.sendMessage(Text.of("Teleported to spawn."), false);
+            } else {
+                source.sendMessage(Text.of("Teleported " + player.getName().getString() + " to spawn."));
+            }
+
+            return 1;
+        } else {
+            player.sendMessage(Text.of("Spawn Location not found."), false);
+            return 0; // Return a failure code.
+        }
+    }
+
 }
