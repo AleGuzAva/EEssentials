@@ -16,6 +16,11 @@ public class DisposalCommand {
     // Permission node for the disposal command.
     public static final String DISPOSAL_PERMISSION_NODE = "eessentials.disposal";
 
+    /**
+     * Registers the disposal command.
+     *
+     * @param dispatcher The command dispatcher to register commands on.
+     */
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("disposal")
