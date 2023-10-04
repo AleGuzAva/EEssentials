@@ -1,5 +1,6 @@
 package EEssentials.commands.utility;
 
+import EEssentials.screens.EnderchestScreen;
 import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -41,6 +42,19 @@ public class EnderchestCommand {
                                     return openEnderchest(ctx, target);  // Opens the enderchest for the specified player
                                 }))
         );
+
+        // /echest is an alias for enderchest
+        dispatcher.register(
+                literal("echest")
+                        .requires(Permissions.require(ENDERCHEST_PERMISSION_NODE, 2))
+                        .executes(ctx -> openEnderchest(ctx))  // Opens the enderchest for the executing player
+                        .then(argument("target", EntityArgumentType.player())
+                                .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
+                                .executes(ctx -> {
+                                    ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
+                                    return openEnderchest(ctx, target);  // Opens the enderchest for the specified player
+                                }))
+        );
     }
 
     /**
@@ -57,12 +71,7 @@ public class EnderchestCommand {
 
         if (executingPlayer == null || targetPlayer == null) return 0;
 
-        NamedScreenHandlerFactory screenHandlerFactory = new SimpleNamedScreenHandlerFactory(
-                (syncId, inventory, p) ->
-                        GenericContainerScreenHandler.createGeneric9x3(syncId, inventory, targetPlayer.getEnderChestInventory()),
-                Text.translatable("container.enderchest")
-        );
-
+        EnderchestScreen screenHandlerFactory = new EnderchestScreen(targetPlayer);
         executingPlayer.openHandledScreen(screenHandlerFactory);
         executingPlayer.incrementStat(Stats.OPEN_ENDERCHEST);
 
