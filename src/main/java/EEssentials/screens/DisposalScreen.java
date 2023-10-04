@@ -1,4 +1,4 @@
-package ScreenHandlers;
+package EEssentials.screens;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;

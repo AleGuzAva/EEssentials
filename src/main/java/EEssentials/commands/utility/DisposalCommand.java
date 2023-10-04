@@ -1,6 +1,6 @@
 package EEssentials.commands.utility;
 
-import ScreenHandlers.DisposalScreen;
+import EEssentials.screens.DisposalScreen;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
