@@ -102,6 +102,21 @@ public class MessageCommands {
                         })));
     }
 
+
+    /**
+     * Sends Social Spy messages to the Spy.
+     *
+     * @param ctx The command context.
+     * @param message The message to be sent.
+     */
+    private static void sendToSocialSpies(CommandContext<ServerCommandSource> ctx, Text message) {
+        for (ServerPlayerEntity spy : ctx.getSource().getServer().getPlayerManager().getPlayerList()) {
+            if (SocialSpyCommand.isSocialSpyEnabled(spy)) {
+                spy.sendMessage(message, false);
+            }
+        }
+    }
+
     /**
      * Sends a private message to the target player.
      *
@@ -110,14 +125,7 @@ public class MessageCommands {
      * @param message The message to be sent.
      * @return 1 if successful, 0 otherwise.
      */
-    /**
-     * Sends a private message to the target player.
-     *
-     * @param ctx     The command context.
-     * @param target  The target player.
-     * @param message The message to be sent.
-     * @return 1 if successful, 0 otherwise.
-     */
+
     private static int sendMessage(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity target, String message) {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity player = source.getPlayer();
@@ -129,6 +137,10 @@ public class MessageCommands {
 
         target.sendMessage(targetMessage, false);
         player.sendMessage(senderMessage, false);
+
+        // Social Spy
+        Text socialSpyMessage = Text.of("[" + player.getName().getString() + " -> " + target.getName().getString() + "] " + message);
+        sendToSocialSpies(ctx, socialSpyMessage);
 
         // Store this interaction so that the target can reply back
         storeLastSender(target, player);
@@ -151,12 +163,18 @@ public class MessageCommands {
         Text senderMessage = Text.of("[me -> " + target.getName().getString() + "] " + message);
         Text targetMessage = Text.of("[" + player.getName().getString() + " -> me] " + message);
 
+
         target.sendMessage(targetMessage, false);
         player.sendMessage(senderMessage, false);
+
+        // Social Spy
+        Text socialSpyMessage = Text.of("[" + player.getName().getString() + " -> " + target.getName().getString() + "] " + message);
+        sendToSocialSpies(ctx, socialSpyMessage);
 
         // Update the last sender for potential back-and-forth replies
         storeLastSender(target, player);
 
         return 1;
     }
+
 }
