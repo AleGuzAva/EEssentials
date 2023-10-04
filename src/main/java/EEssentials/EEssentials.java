@@ -63,6 +63,7 @@ public class EEssentials implements ModInitializer {
             DisposalCommand.register(dispatcher);
             MessageCommands.register(dispatcher);
             SocialSpyCommand.register(dispatcher);
+            FlyCommand.register(dispatcher);
         });
 
         // Perform additional setup (e.g., permissions) when the server starts.
