@@ -2,6 +2,7 @@ package EEssentials;
 
 import EEssentials.commands.other.MessageCommands;
 import EEssentials.commands.other.PlaytimeCommand;
+import EEssentials.commands.other.SocialSpyCommand;
 import EEssentials.commands.teleportation.*;
 import EEssentials.commands.utility.*;
 import EEssentials.events.ServerTickCallback;
@@ -61,6 +62,7 @@ public class EEssentials implements ModInitializer {
             EnderchestCommand.register(dispatcher);
             DisposalCommand.register(dispatcher);
             MessageCommands.register(dispatcher);
+            SocialSpyCommand.register(dispatcher);
         });
 
         // Perform additional setup (e.g., permissions) when the server starts.
