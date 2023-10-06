@@ -71,6 +71,7 @@ public class EEssentials implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             setupPermissions();
             this.server = server;
+            storage.serverStarted();
         });
 
         // Register tick listener

@@ -1,5 +1,6 @@
 package EEssentials.commands.teleportation;
 
+import EEssentials.EEssentials;
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -15,9 +16,6 @@ import static net.minecraft.server.command.CommandManager.*;
  */
 public class SpawnCommands {
 
-    // A variable to store the universal spawn location.
-    private static Location spawnLocation = null;
-
     /**
      * Registers spawn related commands (/setspawn, /spawn).
      *
@@ -29,8 +27,9 @@ public class SpawnCommands {
                 .requires(src -> src.hasPermissionLevel(2)) // Only operators can set the spawn
                 .executes(ctx -> {
                     ServerPlayerEntity player = ctx.getSource().getPlayer();
+                    if (player == null) return 0;
 
-                    spawnLocation = new Location(player.getServerWorld(), player.getX(), player.getY(), player.getZ());
+                    EEssentials.storage.worldSpawns.setSpawn(Location.fromPlayer(player));
                     player.sendMessage(Text.literal("Set Spawn to current location."), false);
 
                     return 1;
@@ -51,7 +50,9 @@ public class SpawnCommands {
     private static int teleportToSpawn(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity... targets) {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity player = targets.length > 0 ? targets[0] : ctx.getSource().getPlayer();
+        if (player == null) return 0;
 
+        Location spawnLocation = EEssentials.storage.worldSpawns.serverSpawn;
         if (spawnLocation != null) {
             spawnLocation.teleport(player);
 
@@ -63,7 +64,7 @@ public class SpawnCommands {
 
             return 1;
         } else {
-            player.sendMessage(Text.of("Spawn Location not found."), false);
+            player.sendMessage(Text.of("Spawn Location not set."), false);
             return 0; // Return a failure code.
         }
     }
