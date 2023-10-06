@@ -6,7 +6,9 @@ import EEssentials.commands.other.SocialSpyCommand;
 import EEssentials.commands.teleportation.*;
 import EEssentials.commands.utility.*;
 import EEssentials.events.ServerTickCallback;
+import EEssentials.storage.PlayerStorage;
 import EEssentials.storage.StorageManager;
+import EEssentials.util.Location;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -16,6 +18,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.luckperms.api.LuckPermsProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.stat.Stats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +92,13 @@ public class EEssentials implements ModInitializer {
 
         ServerPlayConnectionEvents.JOIN.register((ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) -> {
             storage.playerJoined(handler.player);
+            PlayerStorage ps = storage.getPlayerStorage(handler.player);
+            if (!ps.playedBefore) {
+                Location spawn = storage.worldSpawns.serverSpawn;
+                if (spawn != null) {
+                    spawn.teleport(handler.player);
+                }
+            }
         });
 
     }

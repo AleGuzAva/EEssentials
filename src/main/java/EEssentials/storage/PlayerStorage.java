@@ -19,6 +19,7 @@ public class PlayerStorage {
 
     private UUID playerUUID;
     public final HashMap<String, Location> homes = new HashMap<>();
+    public Boolean playedBefore = false;
 
     public PlayerStorage(UUID uuid) {
         playerUUID = uuid;
@@ -32,7 +33,7 @@ public class PlayerStorage {
     public File getSaveFile() {
         File file = EEssentials.storage.playerStorageDirectory.resolve(playerUUID.toString() + ".json").toFile();
         try {
-            file.createNewFile();
+            playedBefore = !file.createNewFile();
         } catch (IOException e) {
             EEssentials.LOGGER.error("Failed to create file for PlayerStorage /w UUID: " + playerUUID.toString());
         }
