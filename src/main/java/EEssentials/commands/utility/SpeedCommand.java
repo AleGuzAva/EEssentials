@@ -1,7 +1,6 @@
 package EEssentials.commands.utility;
 
 import EEssentials.mixins.PlayerAbilitiesMixin;
-import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.context.CommandContext;
