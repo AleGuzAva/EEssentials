@@ -3,7 +3,6 @@ package EEssentials.commands.other;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandSource;
 import static net.minecraft.server.command.CommandManager.*;
 import net.minecraft.command.argument.EntityArgumentType;

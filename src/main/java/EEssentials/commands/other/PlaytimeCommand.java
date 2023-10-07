@@ -1,6 +1,5 @@
 package EEssentials.commands.other;
 
-import EEssentials.util.PermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
