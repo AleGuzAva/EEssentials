@@ -19,6 +19,7 @@ public class PlayerStorage {
 
     private UUID playerUUID;
     public final HashMap<String, Location> homes = new HashMap<>();
+    public Boolean playedBefore = false;
     private Location previousLocation;
 
     public PlayerStorage(UUID uuid) {
@@ -32,21 +33,12 @@ public class PlayerStorage {
 
     public File getSaveFile() {
         File file = EEssentials.storage.playerStorageDirectory.resolve(playerUUID.toString() + ".json").toFile();
-
-        if (!file.exists()) {
-            initializeDefaultFile(file);
-        }
-
-        return file;
-    }
-
-    private void initializeDefaultFile(File file) {
         try {
-            file.createNewFile();
-            save(); // This will use the already defined homes and previousLocation (which should be empty by default).
+            playedBefore = !file.createNewFile();
         } catch (IOException e) {
-            EEssentials.LOGGER.error("Failed to create and initialize default file for PlayerStorage /w UUID: " + playerUUID.toString());
+            EEssentials.LOGGER.error("Failed to create file for PlayerStorage /w UUID: " + playerUUID.toString());
         }
+        return file;
     }
 
     private Gson createCustomGson() {
