@@ -11,7 +11,8 @@ import net.minecraft.text.Text;
 import static net.minecraft.server.command.CommandManager.*;
 
 public class BackCommand {
-    public static final String BACK_PERMISSION_NODE = "eessentials.back";
+    public static final String BACK_SELF_PERMISSION_NODE = "eessentials.back.self";
+    public static final String BACK_OTHER_PERMISSION_NODE = "eessentials.back.other";
 
     /**
      * Registers the /back command to teleport the player to their last known location.
@@ -21,12 +22,13 @@ public class BackCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("back")
-                        .requires(Permissions.require(BACK_PERMISSION_NODE, 2))
+                        .requires(Permissions.require(BACK_SELF_PERMISSION_NODE, 2))
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             return teleportBack(player);
                         })
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(BACK_OTHER_PERMISSION_NODE, 2))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
                                     return teleportBack(target);

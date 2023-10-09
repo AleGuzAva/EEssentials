@@ -16,7 +16,9 @@ import net.minecraft.text.Text;
 public class FlyCommand {
 
     // Permission node for the fly command.
-    public static final String FLY_PERMISSION_NODE = "eessentials.fly";
+    public static final String FLY_SELF_PERMISSION_NODE = "eessentials.fly.self";
+    public static final String FLY_OTHER_PERMISSION_NODE = "eessentials.fly.other";
+
 
     /**
      * Registers the fly command.
@@ -26,9 +28,10 @@ public class FlyCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("fly")
-                        .requires(Permissions.require(FLY_PERMISSION_NODE, 2))
+                        .requires(Permissions.require(FLY_SELF_PERMISSION_NODE, 2))
                         .executes(ctx -> toggleFlight(ctx))  // Toggle flight for the executing player
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(FLY_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");

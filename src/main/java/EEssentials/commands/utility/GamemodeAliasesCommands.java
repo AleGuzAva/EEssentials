@@ -24,6 +24,7 @@ public class GamemodeAliasesCommands {
     public static final String CREATIVE_PERMISSION_NODE = "eessentials.gamemode.creative";
     public static final String SPECTATOR_PERMISSION_NODE = "eessentials.gamemode.spectator";
     public static final String SURVIVAL_PERMISSION_NODE = "eessentials.gamemode.survival";
+    public static final String GAMEMODE_OTHER_PERMISSION_NODE = "eessentials.gamemode.other";
 
     /**
      * Registers game mode switching commands.
@@ -36,9 +37,8 @@ public class GamemodeAliasesCommands {
                 literal("gmc")
                         .requires(Permissions.require(CREATIVE_PERMISSION_NODE, 2))
                         .then(argument("target", EntityArgumentType.player())  // Add player argument
-                                .suggests((ctx, builder) -> {
-                                    return CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder);
-                                })
+                                .requires(Permissions.require(GAMEMODE_OTHER_PERMISSION_NODE, 2))
+                                .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
                                     return executeGameMode(ctx, GameMode.CREATIVE, target);  // Pass the target player to the execute method
@@ -52,6 +52,7 @@ public class GamemodeAliasesCommands {
                 literal("gms")
                         .requires(Permissions.require(SURVIVAL_PERMISSION_NODE, 2))
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(GAMEMODE_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
@@ -65,6 +66,7 @@ public class GamemodeAliasesCommands {
                 literal("gmsp")
                         .requires(Permissions.require(SPECTATOR_PERMISSION_NODE, 2))
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(GAMEMODE_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
@@ -78,6 +80,7 @@ public class GamemodeAliasesCommands {
                 literal("gma")
                         .requires(Permissions.require(ADVENTURE_PERMISSION_NODE, 2))
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(GAMEMODE_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");

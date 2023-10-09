@@ -17,8 +17,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class PlaytimeCommand {
 
-    // Permission node for the playtime command.
-    public static final String PLAYTIME_PERMISSION_NODE = "eessentials.playtime";
+    // Permission nodes for the playtime command.
+    public static final String PLAYTIME_SELF_PERMISSION_NODE = "eessentials.playtime.self";
+    public static final String PLAYTIME_OTHER_PERMISSION_NODE = "eessentials.playtime.other";
 
     /**
      * Registers the playtime command.
@@ -28,9 +29,10 @@ public class PlaytimeCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("playtime")
-                        .requires(Permissions.require(PLAYTIME_PERMISSION_NODE, 2))
+                        .requires(Permissions.require(PLAYTIME_SELF_PERMISSION_NODE, 2))
                         .executes(ctx -> showPlaytime(ctx))  // Shows the executing player's playtime
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(PLAYTIME_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");

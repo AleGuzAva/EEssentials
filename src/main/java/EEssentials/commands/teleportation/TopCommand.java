@@ -2,6 +2,7 @@ package EEssentials.commands.teleportation;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -14,6 +15,8 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class TopCommand {
 
+    public static final String TOP_PERMISSION_NODE = "eessentials.top";
+
     /**
      * Registers the /top command.
      *
@@ -22,7 +25,7 @@ public class TopCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("top")
-                        .requires(source -> source.hasPermissionLevel(2))
+                        .requires(Permissions.require(TOP_PERMISSION_NODE, 2))
                         .executes(TopCommand::teleportToTop)
         );
     }
