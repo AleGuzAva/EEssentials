@@ -2,6 +2,7 @@ package EEssentials;
 
 import EEssentials.commands.other.MessageCommands;
 import EEssentials.commands.other.PlaytimeCommand;
+import EEssentials.commands.other.SeenCommand;
 import EEssentials.commands.other.SocialSpyCommand;
 import EEssentials.commands.teleportation.*;
 import EEssentials.commands.utility.*;
@@ -69,6 +70,8 @@ public class EEssentials implements ModInitializer {
             FlyCommand.register(dispatcher);
             WorkbenchCommand.register(dispatcher);
             BackCommand.register(dispatcher);
+            SeenCommand.register(dispatcher);
+            TPOfflineCommand.register(dispatcher);
         });
 
         // Perform additional setup (e.g., permissions) when the server starts.
@@ -88,8 +91,16 @@ public class EEssentials implements ModInitializer {
         });
 
         ServerPlayConnectionEvents.DISCONNECT.register((ServerPlayNetworkHandler handler, MinecraftServer server) -> {
-            storage.playerLeft(handler.player);
+            PlayerStorage storage = EEssentials.storage.getPlayerStorage(handler.player);
+            Location currentLogoutLocation = Location.fromPlayer(handler.player);
+            storage.setLogoutLocation(currentLogoutLocation);
+            storage.setLastTimeOnline();
+            storage.save();
+            EEssentials.storage.playerLeft(handler.player);
         });
+
+
+
 
         ServerPlayConnectionEvents.JOIN.register((ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) -> {
             storage.playerJoined(handler.player);
