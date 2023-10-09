@@ -16,7 +16,8 @@ import net.minecraft.text.Text;
 public class FeedCommand {
 
     // Permission node for the feed command.
-    public static final String FEED_PERMISSION_NODE = "eessentials.feed";
+    public static final String FEED_SELF_PERMISSION_NODE = "eessentials.feed.self";
+    public static final String FEED_OTHER_PERMISSION_NODE = "eessentials.feed.other";
 
     /**
      * Registers the feed command.
@@ -26,9 +27,10 @@ public class FeedCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("feed")
-                        .requires(Permissions.require(FEED_PERMISSION_NODE, 2))
+                        .requires(Permissions.require(FEED_SELF_PERMISSION_NODE, 2))
                         .executes(ctx -> feedPlayer(ctx))  // Feeds the executing player
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(FEED_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");

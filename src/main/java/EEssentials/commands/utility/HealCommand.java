@@ -16,7 +16,8 @@ import net.minecraft.text.Text;
 public class HealCommand {
 
     // Permission node for the heal command.
-    public static final String HEAL_PERMISSION_NODE = "eessentials.heal";
+    public static final String HEAL_SELF_PERMISSION_NODE = "eessentials.heal.self";
+    public static final String HEAL_OTHER_PERMISSION_NODE = "eessentials.heal.other";
 
     /**
      * Registers the heal command.
@@ -26,9 +27,10 @@ public class HealCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("heal")
-                        .requires(Permissions.require(HEAL_PERMISSION_NODE, 2))
+                        .requires(Permissions.require(HEAL_SELF_PERMISSION_NODE, 2))
                         .executes(ctx -> healPlayer(ctx))  // Heals the executing player
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(HEAL_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");

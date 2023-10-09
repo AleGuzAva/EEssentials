@@ -20,7 +20,8 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class EnderchestCommand {
 
     // Permission node for the enderchest command.
-    public static final String ENDERCHEST_PERMISSION_NODE = "eessentials.enderchest";
+    public static final String ENDERCHEST_SELF_PERMISSION_NODE = "eessentials.enderchest.self";
+    public static final String ENDERCHEST_OTHER_PERMISSION_NODE = "eessentials.enderchest.other";
 
     /**
      * Registers the enderchest command.
@@ -30,9 +31,10 @@ public class EnderchestCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("enderchest")
-                        .requires(Permissions.require(ENDERCHEST_PERMISSION_NODE, 2))
+                        .requires(Permissions.require(ENDERCHEST_SELF_PERMISSION_NODE, 2))
                         .executes(ctx -> openEnderchest(ctx))  // Opens the enderchest for the executing player
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(ENDERCHEST_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
@@ -43,9 +45,10 @@ public class EnderchestCommand {
         // /echest is an alias for enderchest
         dispatcher.register(
                 literal("echest")
-                        .requires(Permissions.require(ENDERCHEST_PERMISSION_NODE, 2))
+                        .requires(Permissions.require(ENDERCHEST_SELF_PERMISSION_NODE, 2))
                         .executes(ctx -> openEnderchest(ctx))  // Opens the enderchest for the executing player
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(ENDERCHEST_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");

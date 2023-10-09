@@ -19,7 +19,8 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class ClearInventoryCommand {
 
     // Permission node for the clear inventory command.
-    public static final String CLEAR_INVENTORY_PERMISSION_NODE = "eessentials.clearinventory";
+    public static final String CLEAR_INVENTORY_SELF_PERMISSION_NODE = "eessentials.clearinventory.self";
+    public static final String CLEAR_INVENTORY_OTHER_PERMISSION_NODE = "eessentials.clearinventory.other";
 
     /**
      * Registers the clear inventory command.
@@ -29,9 +30,10 @@ public class ClearInventoryCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("clearinventory")
-                        .requires(Permissions.require(CLEAR_INVENTORY_PERMISSION_NODE, 2))
+                        .requires(Permissions.require(CLEAR_INVENTORY_SELF_PERMISSION_NODE, 2))
                         .executes(ClearInventoryCommand::clearInventory)  // Clears the inventory of the executing player
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(CLEAR_INVENTORY_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
@@ -42,9 +44,10 @@ public class ClearInventoryCommand {
         // CI is an alias for Clear Inventory
         dispatcher.register(
                 literal("ci")
-                        .requires(Permissions.require(CLEAR_INVENTORY_PERMISSION_NODE, 2))
+                        .requires(Permissions.require(CLEAR_INVENTORY_SELF_PERMISSION_NODE, 2))
                         .executes(ClearInventoryCommand::clearInventory)  // Clears the inventory of the executing player
                         .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(CLEAR_INVENTORY_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .executes(ctx -> {
                                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");

@@ -9,17 +9,23 @@ import java.util.UUID;
 public class StorageManager {
 
     public final Path storageDirectory;
-    public final Path playerStorageDirectory;
+    public static Path playerStorageDirectory;
 
     public final WorldSpawns worldSpawns;
     private final HashMap<UUID, PlayerStorage> playerStores = new HashMap<>();
 
-
     public StorageManager(Path storageDirectory) {
         this.storageDirectory = storageDirectory;
-        this.playerStorageDirectory = storageDirectory.resolve("player");
-        this.playerStorageDirectory.toFile().mkdirs();
+        initializePlayerStorageDirectory(storageDirectory);
         this.worldSpawns = new WorldSpawns(storageDirectory.resolve("world-spawns.json"));
+    }
+
+    // Static method to initialize playerStorageDirectory
+    private static void initializePlayerStorageDirectory(Path storageDirectory) {
+        if (playerStorageDirectory == null) {
+            playerStorageDirectory = storageDirectory.resolve("player");
+            playerStorageDirectory.toFile().mkdirs();
+        }
     }
 
     public void serverStarted() {
