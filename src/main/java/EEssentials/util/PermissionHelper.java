@@ -1,10 +1,14 @@
 package EEssentials.util;
 
+import EEssentials.EEssentials;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.model.user.UserManager;
+import net.luckperms.api.query.QueryOptions;
 import net.minecraft.server.network.ServerPlayerEntity;
+
+import java.util.List;
 
 /**
  * Provides utility functions for checking permissions using LuckPerms.
@@ -12,48 +16,44 @@ import net.minecraft.server.network.ServerPlayerEntity;
  */
 public class PermissionHelper {
 
-    /**
-     * Checks if the given player has a specific permission or a related wildcard permission.
-     *
-     * @param player The player to check the permission for.
-     * @param permission The permission string to verify.
-     * @return true if the player has the permission or its corresponding wildcard permission, false otherwise.
-     */
-    public static boolean hasPermission(ServerPlayerEntity player, String permission) {
-        if (hasSpecificPermission(player, permission)) {
-            return true;
-        }
+    public LuckPerms luckperms = LuckPermsProvider.get();
 
-        // Check for wildcard permission
-        if (hasSpecificPermission(player, "eessentials.admin")) {
-            return true;
-        }
+    public User getLuckPermsUser(ServerPlayerEntity player) {
+        return luckperms.getPlayerAdapter(
+                ServerPlayerEntity.class
+        ).getUser(player);
+    }
 
-        return false;
+    public Boolean hasPermission(ServerPlayerEntity player, String permission) {
+        var user = getLuckPermsUser(player);
+        var permData = user.getCachedData().getPermissionData();
+        if (permData.checkPermission(permission).asBoolean()) return true;
+        return permData.checkPermission("eessentials.admin").asBoolean();
     }
 
     /**
-     * Checks if the given player has a specific permission using LuckPerms.
      *
-     * @param player The player to check the permission for.
-     * @param permission The permission string to verify.
-     * @return true if the player has the permission, false otherwise.
+     * Iterates over all nodes a player inherits (sorted by permssion weight, largest first). It filters these nodes
+     * to grab the "eessentials.homes.<x>" variable where x is the maximum amount of homes.
+     *
+     * @param player ServerPlayerEntity
+     * @return int, maximum amount of homes (default 0)
      */
-    private static boolean hasSpecificPermission(ServerPlayerEntity player, String permission) {
-        // Fetch the LuckPerms API instance
-        LuckPerms luckPerms = LuckPermsProvider.get();
+    public int getMaxHomes(ServerPlayerEntity player) {
+        List<String> homes = getLuckPermsUser(player).resolveInheritedNodes(QueryOptions.nonContextual()).stream()
+                .filter(node -> node.getKey().startsWith("eessentials.homes."))
+                .map(node -> node.getKey().substring("eessentials.homes.".length()))
+                .toList();
 
-        // Fetch the user manager to get user data
-        UserManager userManager = luckPerms.getUserManager();
-
-        // Retrieve the LuckPerms user data for the given player
-        User user = userManager.getUser(player.getUuid());
-
-        if (user == null) {
-            return false; // Player not found in LuckPerms data.
+        for (String home: homes) {
+            try {
+                return Integer.parseInt(home);
+            } catch (NumberFormatException e) {
+                EEssentials.LOGGER.error("Non integer provided via eesentials.homes.<x> permission node.");
+            }
         }
 
-        // Check and return if the user has the specific permission
-        return user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
+        return 0;
     }
+
 }

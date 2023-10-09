@@ -91,7 +91,7 @@ public class PlayerStorage {
                 previousLocation = gson.fromJson(jsonObject.get("previousLocation"), Location.class);
             }
 
-        } catch (IOException | JsonParseException e) {
+        } catch (NullPointerException | IOException | JsonParseException e) {
             EEssentials.LOGGER.warn("Failed to load data from file: " + getSaveFile().getName(), e);
         }
     }

@@ -9,12 +9,14 @@ import EEssentials.events.ServerTickCallback;
 import EEssentials.storage.PlayerStorage;
 import EEssentials.storage.StorageManager;
 import EEssentials.util.Location;
+import EEssentials.util.PermissionHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -33,6 +35,7 @@ public class EEssentials implements ModInitializer {
             new StorageManager(FabricLoader.getInstance().getConfigDir().resolve("EEsentials"));
 
     public static MinecraftServer server = null;
+    public static PermissionHelper perms = null;
     // Singleton instance of the mod.
     public static final EEssentials INSTANCE = new EEssentials();
     // Add a tick counter
@@ -125,7 +128,7 @@ public class EEssentials implements ModInitializer {
     private void setupPermissions() {
         try {
             // Attempt to get an instance of LuckPermsProvider, signaling that permissions have been set up.
-            LuckPermsProvider.get();
+            perms = new PermissionHelper();
             LOGGER.info("Permissions system initialized!");
         } catch (Exception e) {
             // Log an error if permissions initialization fails.
