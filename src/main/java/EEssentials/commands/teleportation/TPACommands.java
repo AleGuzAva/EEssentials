@@ -1,5 +1,6 @@
 package EEssentials.commands.teleportation;
 
+import EEssentials.util.IgnoreManager;
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -65,6 +66,12 @@ public class TPACommands {
                             ServerPlayerEntity requester = ctx.getSource().getPlayer();
                             ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
 
+                            // Check if the target has ignored the requester
+                            if (IgnoreManager.hasIgnored(target, requester)) {
+                                requester.sendMessage(Text.of(target.getName().getString() + " has you on their ignore list. You cannot send them a teleport request."), false);
+                                return 0;
+                            }
+
                             // Check if the target has teleport requests toggled off.
                             if (teleportToggleOff.contains(target.getUuid())) {
                                 requester.sendMessage(Text.literal(target.getName().getString() + " has incoming teleport requests disabled."), false);
@@ -98,6 +105,12 @@ public class TPACommands {
                         .executes(ctx -> {
                             ServerPlayerEntity requester = ctx.getSource().getPlayer();
                             ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
+
+                            // Check if the target has ignored the requester
+                            if (IgnoreManager.hasIgnored(target, requester)) {
+                                requester.sendMessage(Text.of(target.getName().getString() + " has you on their ignore list. You cannot send them a teleport request."), false);
+                                return 0;
+                            }
 
                             // Check if the target has teleport requests toggled off.
                             if (teleportToggleOff.contains(target.getUuid())) {
