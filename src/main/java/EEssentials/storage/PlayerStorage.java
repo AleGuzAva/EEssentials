@@ -22,9 +22,8 @@ public class PlayerStorage {
     private String playerName;
     public final HashMap<String, Location> homes = new HashMap<>();
     public Boolean playedBefore = false;
-    private Location previousLocation;
-    private Location logoutLocation;
-
+    private Location previousLocation = null;
+    private Location logoutLocation = null;
     private Instant lastTimeOnline = Instant.now();
 
     /**
@@ -33,9 +32,12 @@ public class PlayerStorage {
      * @param uuid the UUID of the player.
      */
     public PlayerStorage(UUID uuid) {
-        playerUUID = uuid;
-        load();
+        this.playerUUID = uuid;
+        this.playedBefore = false;
+        this.lastTimeOnline = Instant.now();
+        this.load();
     }
+
 
     /**
      * Fetch player storage for a given online player entity.
@@ -49,8 +51,6 @@ public class PlayerStorage {
         storage.save();
         return storage;
     }
-
-
 
     /**
      * Fetch player storage using a player's UUID.
@@ -163,7 +163,13 @@ public class PlayerStorage {
 
         try (Reader reader = new FileReader(getSaveFile())) {
             JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
-            boolean requiresSave = false; // Flag to indicate if the data should be saved after loading (used to save missing fields)
+
+            // Check if jsonObject is null and if so, initialize it
+            if (jsonObject == null) {
+                jsonObject = new JsonObject();
+            }
+
+            boolean requiresSave = false; // Flag to indicate if the data should be saved after loading
 
             // Load player name
             if (jsonObject.has("playerName")) {
@@ -182,24 +188,25 @@ public class PlayerStorage {
                 }
             }
 
-            // Load previous location if available
             if (jsonObject.has("previousLocation")) {
                 previousLocation = gson.fromJson(jsonObject.get("previousLocation"), Location.class);
+            } else {
+                requiresSave = true;
             }
 
             if (jsonObject.has("logoutLocation")) {
                 logoutLocation = gson.fromJson(jsonObject.get("logoutLocation"), Location.class);
+            } else {
+                requiresSave = true;
             }
 
-            // Load last online time if available. Set to current time if not present in the data file.
             if (jsonObject.has("lastTimeOnline")) {
                 lastTimeOnline = Instant.parse(jsonObject.get("lastTimeOnline").getAsString());
             } else {
                 lastTimeOnline = Instant.now();
-                requiresSave = true;   // Set the flag to save since lastTimeOnline was missing
+                requiresSave = true;
             }
 
-            // If any field was missing and filled with a default value, save the data to update the file
             if (requiresSave) {
                 save();
             }
