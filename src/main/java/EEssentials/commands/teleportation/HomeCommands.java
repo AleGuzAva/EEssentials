@@ -49,6 +49,14 @@ public class HomeCommands {
 
                             PlayerStorage playerStorage = EEssentials.storage.getPlayerStorage(player);
 
+                            // If the new home name isn't already a home, we should check if the player has enough sethomes left
+                            if (!playerStorage.homes.containsKey(homeName)) {
+                                if (playerStorage.homes.keySet().size() >= EEssentials.perms.getMaxHomes(player)) {
+                                    player.sendMessage(Text.literal("You've reached your maximum amount of homes (" + EEssentials.perms.getMaxHomes(player) + "), delete one to set another."));
+                                    return 0;
+                                }
+                            }
+
                             playerStorage.homes.put(
                                     homeName,
                                     Location.fromPlayer(player)

@@ -155,9 +155,6 @@ public class PlayerStorage {
         }
     }
 
-    /**
-     * Load player data from storage.
-     */
     public void load() {
         Gson gson = createCustomGson();
 
@@ -211,7 +208,7 @@ public class PlayerStorage {
                 save();
             }
 
-        } catch (IOException | JsonParseException e) {
+        } catch (NullPointerException | IOException | JsonParseException e) {
             EEssentials.LOGGER.warn("Failed to load data from file: " + getSaveFile().getName(), e);
         }
     }
