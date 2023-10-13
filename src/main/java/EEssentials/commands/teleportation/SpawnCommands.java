@@ -34,7 +34,7 @@ public class SpawnCommands {
                     ServerPlayerEntity player = ctx.getSource().getPlayer();
                     if (player == null) return 0;
 
-                    EEssentials.storage.worldSpawns.setSpawn(Location.fromPlayer(player));
+                    EEssentials.storage.locationManager.setSpawn(Location.fromPlayer(player));
                     player.sendMessage(Text.literal("Set Spawn to current location."), false);
 
                     return 1;
@@ -59,7 +59,7 @@ public class SpawnCommands {
         ServerPlayerEntity player = targets.length > 0 ? targets[0] : ctx.getSource().getPlayer();
         if (player == null) return 0;
 
-        Location spawnLocation = EEssentials.storage.worldSpawns.serverSpawn;
+        Location spawnLocation = EEssentials.storage.locationManager.serverSpawn;
         if (spawnLocation != null) {
             spawnLocation.teleport(player);
 
