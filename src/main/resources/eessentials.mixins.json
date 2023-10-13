@@ -4,6 +4,8 @@
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
 		"PlayerAbilitiesMixin",
+        "BackTeleportationMixin",
+		"TeleportCommandMixin",
 		"ServerPlayerEntityMixin",
 		"TeleportCommandMixin"
 	],

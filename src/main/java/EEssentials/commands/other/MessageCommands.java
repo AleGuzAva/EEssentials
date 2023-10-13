@@ -1,5 +1,6 @@
 package EEssentials.commands.other;
 
+import EEssentials.util.IgnoreManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -134,6 +135,12 @@ public class MessageCommands {
         Text senderMessage = Text.of("[me -> " + target.getName().getString() + "] " + message);
         Text targetMessage = Text.of("[" + player.getName().getString() + " -> me] " + message);
 
+        // Check if the target has ignored the sender
+        if (IgnoreManager.hasIgnored(target, player)) {
+            player.sendMessage(Text.of(target.getName().getString() + " has you on their ignore list. You cannot send them a message"), false);
+            return 1;
+        }
+
         target.sendMessage(targetMessage, false);
         player.sendMessage(senderMessage, false);
 
@@ -158,6 +165,12 @@ public class MessageCommands {
         }
 
         ServerPlayerEntity target = lastMessageSenders.get(player);
+
+        // Check if the target has ignored the sender
+        if (IgnoreManager.hasIgnored(target, player)) {
+            player.sendMessage(Text.of(target.getName().getString() + " has you on their ignore list. You cannot send them a message"), false);
+            return 1;
+        }
 
         Text senderMessage = Text.of("[me -> " + target.getName().getString() + "] " + message);
         Text targetMessage = Text.of("[" + player.getName().getString() + " -> me] " + message);
