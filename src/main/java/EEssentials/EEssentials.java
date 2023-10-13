@@ -33,7 +33,7 @@ public class EEssentials implements ModInitializer {
 
     // Storage manager instance for handling data storage for EEssentials.
     public static final StorageManager storage =
-            new StorageManager(FabricLoader.getInstance().getConfigDir().resolve("EEsentials"));
+            new StorageManager(FabricLoader.getInstance().getConfigDir().resolve("EEssentials"));
 
     // Reference to the active Minecraft server instance.
     public static MinecraftServer server = null;
@@ -159,7 +159,7 @@ public class EEssentials implements ModInitializer {
             storage.playerJoined(handler.player);
             PlayerStorage ps = storage.getPlayerStorage(handler.player);
             if (!ps.playedBefore) {
-                Location spawn = storage.worldSpawns.serverSpawn;
+                Location spawn = storage.locationManager.serverSpawn;
                 if (spawn != null) {
                     spawn.teleport(handler.player);
                 }

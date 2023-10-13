@@ -1,5 +1,6 @@
 package EEssentials.commands.teleportation;
 
+import EEssentials.EEssentials;
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -11,6 +12,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static net.minecraft.server.command.CommandManager.*;
 
@@ -25,9 +27,6 @@ public class WarpCommands {
 
     public static final String WARP_LIST_PERMISSION_NODE = "eessentials.warp.list";
 
-    // A map storing global warps with warp names as keys and locations as values.
-    private static final Map<String, Location> warps = new HashMap<>();
-
     /**
      * Registers warp related commands (/setwarp, /delwarp, /warp, /warps).
      *
@@ -40,28 +39,32 @@ public class WarpCommands {
                 .then(argument("name", StringArgumentType.word())
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
-                            String warpName = StringArgumentType.getString(ctx, "name");
+                            String warpName = StringArgumentType.getString(ctx, "name").toLowerCase();
 
-                            warps.put(warpName, new Location(player.getServerWorld(), player.getX(), player.getY(), player.getZ()));
+                            // Use these values to create the new Location
+                            Location warpLocation = new Location(player.getServerWorld(), player.getX(), player.getY(), player.getZ(), player.getPitch(), player.getYaw());
+
+                            EEssentials.storage.locationManager.setWarp(warpName, warpLocation);
                             player.sendMessage(Text.literal("Warp " + warpName + " set!"), false);
                             return 1;
                         })
                 )
         );
 
+
         // Delete a warp.
         dispatcher.register(literal("delwarp")
                 .requires(Permissions.require(WARP_MANAGE_PERMISSION_NODE, 2))
                 .then(argument("name", StringArgumentType.word())
-                        .suggests((ctx, builder) -> { // Add suggestion provider for easier user experience
-                            return CommandSource.suggestMatching(warps.keySet(), builder);
+                        .suggests((ctx, builder) -> {
+                            return CommandSource.suggestMatching(EEssentials.storage.locationManager.getWarpNames(), builder);
                         })
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
-                            String warpName = StringArgumentType.getString(ctx, "name");
+                            String warpName = StringArgumentType.getString(ctx, "name").toLowerCase();
 
-                            if (warps.containsKey(warpName)) {
-                                warps.remove(warpName);
+                            if (EEssentials.storage.locationManager.getWarp(warpName) != null) {
+                                EEssentials.storage.locationManager.deleteWarp(warpName);
                                 player.sendMessage(Text.literal("Warp " + warpName + " deleted!"), false);
                                 return 1;
                             } else {
@@ -77,21 +80,14 @@ public class WarpCommands {
         dispatcher.register(literal("warp")
                 .requires(Permissions.require(WARP_PERMISSION_NODE, 2))
                 .then(argument("name", StringArgumentType.word())
-                        .suggests((ctx, builder) -> { // Add suggestion provider for easier user experience
-                            return CommandSource.suggestMatching(warps.keySet(), builder);
+                        .suggests((ctx, builder) -> {
+                            return CommandSource.suggestMatching(EEssentials.storage.locationManager.getWarpNames(), builder);
                         })
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
-                            String warpName = StringArgumentType.getString(ctx, "name");
+                            String warpName = StringArgumentType.getString(ctx, "name").toLowerCase();
 
-                            if (warps.containsKey(warpName)) {
-                                warps.get(warpName).teleport(player);
-                                player.sendMessage(Text.literal("Teleported to warp " + warpName + "!"), false);
-                                return 1;
-                            } else {
-                                player.sendMessage(Text.literal("Invalid Warp. Please do `/warp (name)`. To see all available warps, type in `/warps`."), false);
-                                return 0;
-                            }
+                            return teleportToWarp(player, warpName);
                         })
                 )
                 .executes(ctx -> {
@@ -106,8 +102,11 @@ public class WarpCommands {
                 .executes(ctx -> {
                     ServerPlayerEntity player = ctx.getSource().getPlayer();
 
-                    if (!warps.isEmpty()) {
-                        String warpList = String.join(", ", warps.keySet());
+                    // Fetch warp names from the new storage system
+                    Set<String> warpNames = EEssentials.storage.locationManager.getWarpNames();
+
+                    if (!warpNames.isEmpty()) {
+                        String warpList = String.join(", ", warpNames);
                         player.sendMessage(Text.literal("Available warps: " + warpList), false);
                     } else {
                         player.sendMessage(Text.literal("No warps are currently set."), false);
@@ -116,5 +115,17 @@ public class WarpCommands {
                     return 1;
                 })
         );
+    }
+
+    private static int teleportToWarp(ServerPlayerEntity player, String warpName) {
+        Location location = EEssentials.storage.locationManager.getWarp(warpName);
+        if (location != null) {
+            location.teleport(player);
+            player.sendMessage(Text.literal("Teleported to warp " + warpName + "!"), false);
+            return 1;
+        } else {
+            player.sendMessage(Text.literal("Invalid Warp. Please do `/warp (name)`. To see all available warps, type in `/warps`."), false);
+            return 0;
+        }
     }
 }

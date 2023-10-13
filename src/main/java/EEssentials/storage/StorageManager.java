@@ -11,13 +11,13 @@ public class StorageManager {
     public final Path storageDirectory;
     public static Path playerStorageDirectory;
 
-    public final WorldSpawns worldSpawns;
+    public final LocationManager locationManager;
     private final HashMap<UUID, PlayerStorage> playerStores = new HashMap<>();
 
     public StorageManager(Path storageDirectory) {
         this.storageDirectory = storageDirectory;
         initializePlayerStorageDirectory(storageDirectory);
-        this.worldSpawns = new WorldSpawns(storageDirectory.resolve("world-spawns.json"));
+        this.locationManager = new LocationManager(storageDirectory.resolve("Locations.json"));
     }
 
     // Static method to initialize playerStorageDirectory
@@ -29,7 +29,7 @@ public class StorageManager {
     }
 
     public void serverStarted() {
-        this.worldSpawns.load();
+        this.locationManager.load();
     }
 
     public PlayerStorage getPlayerStorage(UUID uuid) {
