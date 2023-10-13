@@ -5,8 +5,7 @@
 	"mixins": [
 		"PlayerAbilitiesMixin",
 		"ServerPlayerEntityMixin",
-		"TeleportCommandMixin",
-		"ServerTickMixin"
+		"TeleportCommandMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

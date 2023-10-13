@@ -6,7 +6,6 @@ import EEssentials.commands.other.SeenCommand;
 import EEssentials.commands.other.SocialSpyCommand;
 import EEssentials.commands.teleportation.*;
 import EEssentials.commands.utility.*;
-import EEssentials.events.ServerTickCallback;
 import EEssentials.storage.PlayerStorage;
 import EEssentials.storage.StorageManager;
 import EEssentials.util.Location;
@@ -14,6 +13,7 @@ import EEssentials.util.PermissionHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -85,7 +85,7 @@ public class EEssentials implements ModInitializer {
         });
 
         // Register tick listener
-        ServerTickCallback.EVENT.register(() -> {
+        ServerTickEvents.START_SERVER_TICK.register((MinecraftServer server) -> {
             tickCounter++;
             if (tickCounter >= 200) { // Every 10 seconds (200 ticks)
                 TPACommands.checkForExpiredRequests();
