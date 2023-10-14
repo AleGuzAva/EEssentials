@@ -209,7 +209,7 @@ public class PlayerStorage {
             }
 
         } catch (NullPointerException | IOException | JsonParseException e) {
-            EEssentials.LOGGER.warn("Failed to load data from file: " + getSaveFile().getName(), e);
+            EEssentials.LOGGER.info("Failed to load data from file: " + getSaveFile().getName());
         }
     }
 

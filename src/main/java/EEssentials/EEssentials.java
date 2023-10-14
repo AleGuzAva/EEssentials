@@ -69,6 +69,8 @@ public class EEssentials implements ModInitializer {
 
         // Register player connection event listeners.
         registerConnectionEventListeners();
+
+
     }
 
     /**
