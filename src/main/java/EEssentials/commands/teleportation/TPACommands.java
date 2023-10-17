@@ -1,8 +1,10 @@
 package EEssentials.commands.teleportation;
 
+import EEssentials.commands.AliasedCommand;
 import EEssentials.util.IgnoreManager;
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.CommandManager;
@@ -138,89 +140,87 @@ public class TPACommands {
                             return 1;
                         })));
 
+        // Register /tpaccept, /tpyes
         // Command to accept a pending teleport request.
-        dispatcher.register(CommandManager.literal("tpaccept")
-                .executes(ctx -> {
-                    ServerPlayerEntity target = ctx.getSource().getPlayer();
+        new AliasedCommand() {
+            @Override
+            public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
+                return dispatcher.register(CommandManager.literal("tpaccept")
+                        .executes(ctx -> {
+                            ServerPlayerEntity target = ctx.getSource().getPlayer();
 
-                    // If there's a request pending for the target player
-                    if (teleportRequests.containsKey(target) && !teleportRequests.get(target).isEmpty()) {
-                        TeleportRequest request = teleportRequests.get(target).remove(0); // Remove the oldest request
-                        ServerPlayerEntity requester = request.requester;
+                            // If there's a request pending for the target player
+                            if (teleportRequests.containsKey(target) && !teleportRequests.get(target).isEmpty()) {
+                                TeleportRequest request = teleportRequests.get(target).remove(0); // Remove the oldest request
+                                ServerPlayerEntity requester = request.requester;
 
-                        // Depending on the type of request, perform the appropriate teleportation
-                        if (request.type == TeleportRequest.RequestType.TPA) {
-                            Location targetLocation = new Location(target.getServerWorld(), target.getX(), target.getY(), target.getZ());
-                            targetLocation.teleport(requester);
+                                // Depending on the type of request, perform the appropriate teleportation
+                                if (request.type == TeleportRequest.RequestType.TPA) {
+                                    Location targetLocation = new Location(target.getServerWorld(), target.getX(), target.getY(), target.getZ());
+                                    targetLocation.teleport(requester);
 
-                            requester.sendMessage(Text.literal("You have teleported to " + target.getName().getString() + "."), false);
-                            target.sendMessage(Text.literal(requester.getName().getString() + " has teleported to you."), false);
-                        } else {  // TeleportRequest.RequestType.TPAHERE
-                            Location requesterLocation = new Location(requester.getServerWorld(), requester.getX(), requester.getY(), requester.getZ());
-                            requesterLocation.teleport(target);
+                                    requester.sendMessage(Text.literal("You have teleported to " + target.getName().getString() + "."), false);
+                                    target.sendMessage(Text.literal(requester.getName().getString() + " has teleported to you."), false);
+                                } else {  // TeleportRequest.RequestType.TPAHERE
+                                    Location requesterLocation = new Location(requester.getServerWorld(), requester.getX(), requester.getY(), requester.getZ());
+                                    requesterLocation.teleport(target);
 
-                            requester.sendMessage(Text.literal(target.getName().getString() + " has teleported to you."), false);
-                            target.sendMessage(Text.literal("You have teleported to " + requester.getName().getString() + "."), false);
-                        }
+                                    requester.sendMessage(Text.literal(target.getName().getString() + " has teleported to you."), false);
+                                    target.sendMessage(Text.literal("You have teleported to " + requester.getName().getString() + "."), false);
+                                }
 
-                        // If there are no more requests pending for the target, remove them from the map
-                        if (teleportRequests.get(target).isEmpty()) {
-                            teleportRequests.remove(target);
-                        }
-                    } else {
-                        target.sendMessage(Text.literal("No teleportation requests pending."), false);
-                    }
+                                // If there are no more requests pending for the target, remove them from the map
+                                if (teleportRequests.get(target).isEmpty()) {
+                                    teleportRequests.remove(target);
+                                }
+                            } else {
+                                target.sendMessage(Text.literal("No teleportation requests pending."), false);
+                            }
 
-                    return 1;
-                }));
+                            return 1;
+                        }));
+            }
+
+            @Override
+            public String[] getCommandAliases() {
+                return new String[]{"tpyes"};
+            }
+        }.registerWithAliases(dispatcher);
 
         // Additional commands, such as /tpdeny, /tpacancel, and /tptoggle can be continued in a similar manner...
 
-        // Register /tpdeny
+        // Register /tpdeny, /tpno
         // Allows a player to deny a pending teleportation request.
-        dispatcher.register(CommandManager.literal("tpdeny")
-                .executes(ctx -> {
-                    ServerPlayerEntity target = ctx.getSource().getPlayer();
+        new AliasedCommand() {
+            @Override
+            public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
+                return dispatcher.register(CommandManager.literal("tpdeny")
+                        .executes(ctx -> {
+                            ServerPlayerEntity target = ctx.getSource().getPlayer();
 
-                    if (teleportRequests.containsKey(target) && !teleportRequests.get(target).isEmpty()) {
-                        TeleportRequest request = teleportRequests.get(target).remove(0); // Remove and get the first request.
-                        ServerPlayerEntity requester = request.requester;
+                            if (teleportRequests.containsKey(target) && !teleportRequests.get(target).isEmpty()) {
+                                TeleportRequest request = teleportRequests.get(target).remove(0); // Remove and get the first request.
+                                ServerPlayerEntity requester = request.requester;
 
-                        requester.sendMessage(Text.literal(target.getName().getString() + " has denied your teleportation request."), false);
-                        target.sendMessage(Text.literal("You have denied " + requester.getName().getString() + "'s teleportation request."), false);
+                                requester.sendMessage(Text.literal(target.getName().getString() + " has denied your teleportation request."), false);
+                                target.sendMessage(Text.literal("You have denied " + requester.getName().getString() + "'s teleportation request."), false);
 
-                        if (teleportRequests.get(target).isEmpty()) {
-                            teleportRequests.remove(target);
-                        }
-                    } else {
-                        target.sendMessage(Text.literal("No teleportation requests pending."), false);
-                    }
+                                if (teleportRequests.get(target).isEmpty()) {
+                                    teleportRequests.remove(target);
+                                }
+                            } else {
+                                target.sendMessage(Text.literal("No teleportation requests pending."), false);
+                            }
 
-                    return 1;
-                }));
+                            return 1;
+                        }));
+            }
 
-        // Register /tpno
-        // Allows a player to deny a pending teleportation request.
-        dispatcher.register(CommandManager.literal("tpno")
-                .executes(ctx -> {
-                    ServerPlayerEntity target = ctx.getSource().getPlayer();
-
-                    if (teleportRequests.containsKey(target) && !teleportRequests.get(target).isEmpty()) {
-                        TeleportRequest request = teleportRequests.get(target).remove(0); // Remove and get the first request.
-                        ServerPlayerEntity requester = request.requester;
-
-                        requester.sendMessage(Text.literal(target.getName().getString() + " has denied your teleportation request."), false);
-                        target.sendMessage(Text.literal("You have denied " + requester.getName().getString() + "'s teleportation request."), false);
-
-                        if (teleportRequests.get(target).isEmpty()) {
-                            teleportRequests.remove(target);
-                        }
-                    } else {
-                        target.sendMessage(Text.literal("No teleportation requests pending."), false);
-                    }
-
-                    return 1;
-                }));
+            @Override
+            public String[] getCommandAliases() {
+                return new String[]{"tpno"};
+            }
+        }.registerWithAliases(dispatcher);
 
         // Register /tpacancel
         // Allows a player to cancel an outgoing teleportation request.

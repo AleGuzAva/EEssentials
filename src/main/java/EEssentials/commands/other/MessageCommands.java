@@ -1,9 +1,11 @@
 package EEssentials.commands.other;
 
+import EEssentials.commands.AliasedCommand;
 import EEssentials.util.IgnoreManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.command.CommandSource;
 import static net.minecraft.server.command.CommandManager.*;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -38,14 +40,18 @@ public class MessageCommands {
      */
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 
-        // Unregister the existing MSG and TELL command
+        // Unregister the existing message commands
+        dispatcher.getRoot().getChildren().removeIf(literalCommandNode -> "message".equals(literalCommandNode.getName()));
         dispatcher.getRoot().getChildren().removeIf(literalCommandNode -> "msg".equals(literalCommandNode.getName()));
         dispatcher.getRoot().getChildren().removeIf(literalCommandNode -> "tell".equals(literalCommandNode.getName()));
+        dispatcher.getRoot().getChildren().removeIf(literalCommandNode -> "whisper".equals(literalCommandNode.getName()));
+        dispatcher.getRoot().getChildren().removeIf(literalCommandNode -> "w".equals(literalCommandNode.getName()));
 
-
-        // Register the /msg command
-        dispatcher.register(
-                literal("msg")
+        // Register /message, /msg, /tell, /whisper, /w
+        new AliasedCommand() {
+            @Override
+            public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
+                return dispatcher.register(CommandManager.literal("message")
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .then(argument("message", StringArgumentType.greedyString())
@@ -53,53 +59,32 @@ public class MessageCommands {
                                             ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
                                             String message = StringArgumentType.getString(ctx, "message");
                                             return sendMessage(ctx, target, message);  // Sends the private message
-                                        }))
-                        )
-        );
+                                        }))));
+            }
 
-        // tell is a popular alternative to /msg
-        dispatcher.register(
-                literal("tell")
-                        .then(argument("target", EntityArgumentType.player())
-                                .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
-                                .then(argument("message", StringArgumentType.greedyString())
-                                        .executes(ctx -> {
-                                            ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
-                                            String message = StringArgumentType.getString(ctx, "message");
-                                            return sendMessage(ctx, target, message);  // Sends the private message
-                                        }))
-                        )
-        );
+            @Override
+            public String[] getCommandAliases() {
+                return new String[]{"msg", "tell", "whisper", "w"};
+            }
+        }.registerWithAliases(dispatcher);
 
-        // Whisper is a popular alternative to /msg
-        dispatcher.register(
-                literal("whisper")
-                        .then(argument("target", EntityArgumentType.player())
-                                .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
-                                .then(argument("message", StringArgumentType.greedyString())
-                                        .executes(ctx -> {
-                                            ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
-                                            String message = StringArgumentType.getString(ctx, "message");
-                                            return sendMessage(ctx, target, message);  // Sends the private message
-                                        }))
-                        )
-        );
+        // Register /reply, /r
+        new AliasedCommand() {
+            @Override
+            public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
+                return dispatcher.register(CommandManager.literal("reply")
+                        .then(CommandManager.argument("message", StringArgumentType.greedyString())
+                                .executes(ctx -> {
+                                    String message = StringArgumentType.getString(ctx, "message");
+                                    return sendReply(ctx, message);  // Handle the reply
+                                })));
+            }
 
-        // Register the /reply command
-        dispatcher.register(CommandManager.literal("reply")
-                .then(CommandManager.argument("message", StringArgumentType.greedyString())
-                        .executes(ctx -> {
-                            String message = StringArgumentType.getString(ctx, "message");
-                            return sendReply(ctx, message);  // Handle the reply
-                        })));
-
-        // /r is a popular alias for /reply
-        dispatcher.register(CommandManager.literal("r")
-                .then(CommandManager.argument("message", StringArgumentType.greedyString())
-                        .executes(ctx -> {
-                            String message = StringArgumentType.getString(ctx, "message");
-                            return sendReply(ctx, message);  // Handle the reply
-                        })));
+            @Override
+            public String[] getCommandAliases() {
+                return new String[]{"r"};
+            }
+        }.registerWithAliases(dispatcher);
     }
 
 
