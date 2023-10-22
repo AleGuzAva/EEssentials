@@ -81,6 +81,8 @@ public class EEssentials implements ModInitializer {
             SpeedCommand.register(dispatcher);
             GamemodeAliasesCommands.register(dispatcher);
             TPACommands.register(dispatcher);
+            TPHereCommand.register(dispatcher);
+            TPOfflineCommand.register(dispatcher);
             HomeCommands.register(dispatcher);
             WarpCommands.register(dispatcher);
             SpawnCommands.register(dispatcher);
@@ -97,7 +99,6 @@ public class EEssentials implements ModInitializer {
             WorkbenchCommand.register(dispatcher);
             BackCommand.register(dispatcher);
             SeenCommand.register(dispatcher);
-            TPOfflineCommand.register(dispatcher);
             CheckTimeCommand.register(dispatcher);
             AFKCommand.register(dispatcher);
             IgnoreCommands.register(dispatcher);
