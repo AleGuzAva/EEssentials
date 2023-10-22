@@ -107,8 +107,9 @@ public class HomeCommands {
         );
 
         // Command for teleporting to another player's home
-        dispatcher.register(literal("home:")
-                .requires(src -> Permissions.check(src, HOME_OTHER_PERMISSION_NODE, 2)) // Checking permission for the suggestion
+        dispatcher.register(
+                literal("home:")
+                .requires(Permissions.require(HOME_OTHER_PERMISSION_NODE, 2))
                 .then(argument("target", StringArgumentType.word())
                         .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                         .then(argument("homeName", StringArgumentType.word())
