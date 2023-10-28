@@ -6,6 +6,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandSource;
 import static net.minecraft.server.command.CommandManager.*;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -22,11 +23,9 @@ import java.util.Map;
  */
 public class MessageCommands {
 
-    /*
-     * DO NOT GIVE THIS COMMAND ANY PERMISSION NODES AS /MSG IS OVERRWRITES THE VANILLA /MSG and /TELL
-     * MEANING PLAYERS WON'T BE ABLE TO /MSG OFF THE RIP
-     * Open to Discussing this btw ^_^ - Novoro
-     */
+    // Permission nodes for the commands
+    private static final String MESSAGE_PERMISSION_NODE = "eessentials.msg";
+
     private static final Map<ServerPlayerEntity, ServerPlayerEntity> lastMessageSenders = new HashMap<>();
 
     public static void storeLastSender(ServerPlayerEntity recipient, ServerPlayerEntity sender) {
@@ -52,6 +51,7 @@ public class MessageCommands {
             @Override
             public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
                 return dispatcher.register(CommandManager.literal("message")
+                        .requires(src -> Permissions.check(src, MESSAGE_PERMISSION_NODE, 2))
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .then(argument("message", StringArgumentType.greedyString())
@@ -73,6 +73,7 @@ public class MessageCommands {
             @Override
             public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
                 return dispatcher.register(CommandManager.literal("reply")
+                        .requires(src -> Permissions.check(src, MESSAGE_PERMISSION_NODE, 2))
                         .then(CommandManager.argument("message", StringArgumentType.greedyString())
                                 .executes(ctx -> {
                                     String message = StringArgumentType.getString(ctx, "message");

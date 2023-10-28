@@ -29,7 +29,9 @@ import static net.minecraft.server.command.CommandManager.literal;
  */
 public class HomeCommands {
 
-
+    public static final String SET_HOME_PERMISSION_NODE = "eessentials.sethome";
+    public static final String DELETE_HOME_PERMISSION_NODE = "eessentials.delhome";
+    public static final String HOME_PERMISSION_NODE = "eessentials.home.self";
     public static final String HOME_OTHER_PERMISSION_NODE = "eessentials.home.other";
 
 
@@ -41,6 +43,7 @@ public class HomeCommands {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         // Set a new home or overwrite an existing one for the player.
         dispatcher.register(literal("sethome")
+                .requires(src -> Permissions.check(src, SET_HOME_PERMISSION_NODE, 2))
                 .then(argument("name", StringArgumentType.word())
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
@@ -72,6 +75,7 @@ public class HomeCommands {
         // Delete a home for the player.
         dispatcher.register(literal("delhome")
                 .then(argument("name", StringArgumentType.word())
+                        .requires(src -> Permissions.check(src, DELETE_HOME_PERMISSION_NODE, 2))
                         .suggests(HomeCommands::suggestHomes)
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
@@ -96,6 +100,7 @@ public class HomeCommands {
 
         // Regular /home command
         dispatcher.register(literal("home")
+                .requires(src -> Permissions.check(src, HOME_PERMISSION_NODE, 2))
                 .executes(ctx -> listHomes(ctx)) // If just /home is executed
                 .then(argument("name", StringArgumentType.word())
                         .suggests(HomeCommands::suggestHomes)
@@ -109,7 +114,7 @@ public class HomeCommands {
         // Command for teleporting to another player's home
         dispatcher.register(
                 literal("home:")
-                .requires(Permissions.require(HOME_OTHER_PERMISSION_NODE, 2))
+                .requires(src -> Permissions.check(src, HOME_OTHER_PERMISSION_NODE, 2))
                 .then(argument("target", StringArgumentType.word())
                         .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                         .then(argument("homeName", StringArgumentType.word())

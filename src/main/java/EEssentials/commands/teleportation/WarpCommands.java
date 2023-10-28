@@ -10,8 +10,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import static net.minecraft.server.command.CommandManager.*;
@@ -23,7 +21,8 @@ public class WarpCommands {
 
     // Permission Nodes for Warp Commands
     public static final String WARP_PERMISSION_NODE = "eessentials.warp.self";
-    public static final String WARP_MANAGE_PERMISSION_NODE = "eessentials.warp.manage";
+    public static final String WARP_SET_PERMISSION_NODE = "eessentials.warp.set";
+    public static final String WARP_DELETE_PERMISSION_NODE = "eessentials.warp.delete";
 
     public static final String WARP_LIST_PERMISSION_NODE = "eessentials.warp.list";
 
@@ -35,7 +34,7 @@ public class WarpCommands {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         // Set a new warp or overwrite an existing one.
         dispatcher.register(literal("setwarp")
-                .requires(Permissions.require(WARP_MANAGE_PERMISSION_NODE, 2))
+                .requires(Permissions.require(WARP_SET_PERMISSION_NODE, 2))
                 .then(argument("name", StringArgumentType.word())
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
@@ -54,7 +53,7 @@ public class WarpCommands {
 
         // Delete a warp.
         dispatcher.register(literal("delwarp")
-                .requires(Permissions.require(WARP_MANAGE_PERMISSION_NODE, 2))
+                .requires(Permissions.require(WARP_DELETE_PERMISSION_NODE, 2))
                 .then(argument("name", StringArgumentType.word())
                         .suggests((ctx, builder) -> {
                             return CommandSource.suggestMatching(EEssentials.storage.locationManager.getWarpNames(), builder);
@@ -69,7 +68,7 @@ public class WarpCommands {
                                 return 1;
                             } else {
                                 player.sendMessage(Text.literal("Warp " + warpName + " does not exist!"), false);
-                                return 0; // Return a failure code.
+                                return 0;
                             }
                         })
                 )

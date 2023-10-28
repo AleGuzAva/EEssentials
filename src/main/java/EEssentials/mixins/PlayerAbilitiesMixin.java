@@ -12,4 +12,10 @@ public interface PlayerAbilitiesMixin {
 
     @Accessor("flySpeed")
     float getFlySpeed();
+
+    @Accessor("walkSpeed")
+    void setWalkSpeed(float walkSpeed);
+
+    @Accessor("walkSpeed")
+    float getWalkSpeed();
 }
