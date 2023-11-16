@@ -3,25 +3,35 @@ package EEssentials;
 import EEssentials.commands.other.*;
 import EEssentials.commands.teleportation.*;
 import EEssentials.commands.utility.*;
+import EEssentials.config.Configuration;
+import EEssentials.config.YamlConfiguration;
+import EEssentials.lang.LangManager;
+import EEssentials.settings.HatSettings;
+import EEssentials.settings.randomteleport.RTPSettings;
 import EEssentials.storage.PlayerStorage;
 import EEssentials.storage.StorageManager;
-import EEssentials.util.Location;
-import EEssentials.util.AFKManager;
-import EEssentials.util.PermissionHelper;
+import EEssentials.util.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The main class for the EEssentials mod, responsible for mod initialization and other lifecycle events.
@@ -70,7 +80,10 @@ public class EEssentials implements ModInitializer {
         // Register player connection event listeners.
         registerConnectionEventListeners();
 
+        // Tells the asynchronous executor to shut down when the server does to not have hanging threads.
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> AsynchronousUtil.shutdown());
 
+        this.configManager();
     }
 
     /**
@@ -102,6 +115,16 @@ public class EEssentials implements ModInitializer {
             CheckTimeCommand.register(dispatcher);
             AFKCommand.register(dispatcher);
             IgnoreCommands.register(dispatcher);
+            RTPCommand.register(dispatcher);
+            HatCommand.register(dispatcher);
+            AscendCommand.register(dispatcher);
+            DescendCommand.register(dispatcher);
+            SmiteCommand.register(dispatcher);
+
+            List<String> allTextCommands = getTextCommands();
+            for(String textCommand : allTextCommands) {
+                new TextCommand(textCommand, dispatcher);
+            }
         });
     }
 
@@ -111,7 +134,7 @@ public class EEssentials implements ModInitializer {
     private void registerServerStartListeners() {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             setupPermissions();
-            this.server = server;
+            EEssentials.server = server;
             storage.serverStarted();
         });
     }
@@ -203,4 +226,66 @@ public class EEssentials implements ModInitializer {
         }
     }
 
+    public void configManager() {
+        Configuration mainConfig = getConfig("config.yml");
+
+        Configuration rtpConfig = mainConfig.getSection("Random-Teleport");
+        RTPSettings.reload(rtpConfig);
+
+        TeleportUtil.setUnsafeBlocks(mainConfig.getStringList("Unsafe-Blocks"));
+        TeleportUtil.setAirBlocks(mainConfig.getStringList("Air-Blocks"));
+
+        HatSettings.reload(mainConfig.getSection("Hat"));
+
+        Configuration langConfig = getConfig("lang.yml");
+        LangManager.loadConfig(langConfig);
+    }
+
+    public List<String> getTextCommands() {
+        File folder = null;
+        try {
+            File motdFile = getOrCreateConfigurationFile("text-commands/motd.txt");
+            folder = motdFile.getParentFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        File[] files = folder.listFiles();
+        List<String> textCommands = new ArrayList<>();
+        if(files == null) return textCommands;
+        for(File textFile : files) {
+            String fileName = textFile.getName();
+            if(fileName.contains(".txt")) {
+                textCommands.add(fileName.replace(".txt", ""));
+            }
+        }
+        return textCommands;
+    }
+
+    public File getConfigFolder() {
+        File configFolder = FabricLoader.getInstance().getConfigDir().resolve("EEssentials").toFile();
+        if (!configFolder.exists()) configFolder.mkdirs();
+        return configFolder;
+    }
+
+    public File getOrCreateConfigurationFile(String fileName) throws IOException {
+        File configFolder = getConfigFolder();
+        File configFile = new File(configFolder, fileName);
+        if (!configFile.exists()) {
+            FileOutputStream outputStream = new FileOutputStream(configFile);
+            Path path = Paths.get("eessentials", fileName);
+            InputStream in = getClass().getClassLoader().getResourceAsStream(path.toString().replace("\\", "/"));
+            in.transferTo(outputStream);
+        }
+        return configFile;
+    }
+
+    public Configuration getConfig(String fileName) {
+        Configuration config = null;
+        try {
+            config = YamlConfiguration.loadConfiguration(getOrCreateConfigurationFile(fileName));
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+        return config;
+    }
 }

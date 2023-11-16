@@ -1,0 +1,2 @@
+<gold>Welcome, %player:name%!
+<gold>Players online:<red> %server:online% <gold>- World time:<red> %world:time%
