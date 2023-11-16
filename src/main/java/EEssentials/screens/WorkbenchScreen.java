@@ -9,8 +9,13 @@ import net.minecraft.screen.slot.Slot;
 
 public class WorkbenchScreen extends CraftingScreenHandler {
 
-    public WorkbenchScreen(int syncId, PlayerInventory playerInventory) {
-        super(syncId, playerInventory, ScreenHandlerContext.EMPTY);
+    public WorkbenchScreen(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context) {
+        super(syncId, playerInventory, context);
+    }
+
+    @Override
+    public boolean canUse(PlayerEntity player) {
+        return true;
     }
 
     @Override

@@ -1,14 +1,14 @@
 package EEssentials.commands.utility;
 
-
 import EEssentials.screens.WorkbenchScreen;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import static net.minecraft.server.command.CommandManager.*;
+import static net.minecraft.server.command.CommandManager.literal;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 
@@ -40,19 +40,16 @@ public class WorkbenchCommand {
      * @return 1 if successful, 0 otherwise.
      */
     private static int openWorkbench(CommandContext<ServerCommandSource> ctx) {
-        ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity executingPlayer = source.getPlayer();
+        ServerPlayerEntity player = ctx.getSource().getPlayer();
+        if (player == null) return 0;
 
-        if (executingPlayer == null) return 0;
+        player.openHandledScreen(new SimpleNamedScreenHandlerFactory(
+                (int syncId, net.minecraft.entity.player.PlayerInventory inventory, net.minecraft.entity.player.PlayerEntity playerEntity) ->
+                        new WorkbenchScreen(syncId, inventory, ScreenHandlerContext.create(player.getWorld(), player.getBlockPos())),
+                Text.translatable("container.crafting")
+        ));
 
-        // Create a new screen handler factory for the custom crafting table
-        executingPlayer.openHandledScreen(new SimpleNamedScreenHandlerFactory((i, playerInventory, playerEntity) -> {
-            return new WorkbenchScreen(i, playerInventory);
-        }, Text.translatable("container.crafting")));
-
-        executingPlayer.incrementStat(Stats.INTERACT_WITH_CRAFTING_TABLE);
-
+        player.incrementStat(Stats.INTERACT_WITH_CRAFTING_TABLE);
         return 1;
     }
-
 }

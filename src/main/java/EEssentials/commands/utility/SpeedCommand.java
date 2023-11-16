@@ -40,7 +40,7 @@ public class SpeedCommand {
                 .requires(src -> Permissions.check(src, SPEED_PERMISSION_NODE, 2));
 
         // Subcommand for flying speed
-        RequiredArgumentBuilder<ServerCommandSource, Float> speedArgument = argument("speedMultiplier", FloatArgumentType.floatArg(0.1f, 5.0f))
+        RequiredArgumentBuilder<ServerCommandSource, Float> speedArgument = argument("speedMultiplier", FloatArgumentType.floatArg(0.1f, 10.0f))
                 .requires(src -> Permissions.check(src, FLY_SPEED_PERMISSION_NODE, 2))
                 .executes(ctx -> executeSetFlightSpeed(ctx, FloatArgumentType.getFloat(ctx, "speedMultiplier")));
 
@@ -52,7 +52,7 @@ public class SpeedCommand {
         speedCommand.then(literal("fly").then(speedArgument));
 
         // Repeat the same structure for walking speed.
-        RequiredArgumentBuilder<ServerCommandSource, Float> walkSpeedArgument = argument("speedMultiplier", FloatArgumentType.floatArg(0.1f, 5.0f))
+        RequiredArgumentBuilder<ServerCommandSource, Float> walkSpeedArgument = argument("speedMultiplier", FloatArgumentType.floatArg(0.1f, 10.0f))
                 .requires(src -> Permissions.check(src, WALK_SPEED_PERMISSION_NODE, 2))
                 .executes(ctx -> executeSetWalkSpeed(ctx, FloatArgumentType.getFloat(ctx, "speedMultiplier")));
 
