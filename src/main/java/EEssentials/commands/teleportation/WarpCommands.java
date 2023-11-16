@@ -123,7 +123,7 @@ public class WarpCommands {
             player.sendMessage(Text.literal("Teleported to warp " + warpName + "!"), false);
             return 1;
         } else {
-            player.sendMessage(Text.literal("Invalid Warp. Please do `/warp (name)`. To see all available warps, type in `/warps`."), false);
+            player.sendMessage(Text.literal("There is no valid Location associated with this Warp."), false);
             return 0;
         }
     }

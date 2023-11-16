@@ -8,6 +8,7 @@ import EEssentials.storage.StorageManager;
 import EEssentials.util.Location;
 import EEssentials.util.AFKManager;
 import EEssentials.util.PermissionHelper;
+import EEssentials.util.importers.EssentialCommandsImporter;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -70,7 +71,6 @@ public class EEssentials implements ModInitializer {
         // Register player connection event listeners.
         registerConnectionEventListeners();
 
-
     }
 
     /**
@@ -112,7 +112,15 @@ public class EEssentials implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             setupPermissions();
             this.server = server;
-            storage.serverStarted();
+            storage.locationManager.load();
+            if (storage.locationManager.modImports.contains("essential_commands")) {
+                return;
+            }
+            LOGGER.info("Importing World Data from Essential Commands...");
+            EssentialCommandsImporter.loadEssentialCommandsWorldData();
+            LOGGER.info("Imported World Data from Essential Commands.");
+            storage.locationManager.modImports.add("essential_commands");
+            storage.locationManager.save();
         });
     }
 

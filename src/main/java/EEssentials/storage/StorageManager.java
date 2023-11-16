@@ -30,10 +30,6 @@ public class StorageManager {
         }
     }
 
-    public void serverStarted() {
-        this.locationManager.load();
-    }
-
     public PlayerStorage getPlayerStorage(UUID uuid) {
         return playerStores.getOrDefault(uuid, new PlayerStorage(uuid));
     }
@@ -46,7 +42,7 @@ public class StorageManager {
         PlayerStorage pStorage = playerStores.getOrDefault(player.getUuid(), PlayerStorage.fromPlayer(player));
         if (!pStorage.modImports.contains("essential_commands")) {
             EEssentials.LOGGER.info("Importing data from EssentialCommands for player: " + player.getGameProfile().getName());
-            EssentialCommandsImporter.loadEssentialCommandsData(pStorage);
+            EssentialCommandsImporter.loadEssentialCommandsPlayerData(pStorage);
             pStorage.modImports.add("essential_commands");
             pStorage.save();
         }
