@@ -72,6 +72,9 @@ dependencies {
 	// SnakeYAML dependency
 	implementation 'org.yaml:snakeyaml:2.1'  // Ensure to check for the latest version if needed
 
+	// MiniMessage stuffs
+	modImplementation include("net.kyori:adventure-text-minimessage:4.14.0")
+	modImplementation include("net.kyori:adventure-platform-fabric:5.8.0")
 }
 
 processResources {
