@@ -270,6 +270,14 @@ public class EEssentials implements ModInitializer {
     public File getOrCreateConfigurationFile(String fileName) throws IOException {
         File configFolder = getConfigFolder();
         File configFile = new File(configFolder, fileName);
+
+        // Ensure parent directories exist
+        File parentDir = configFile.getParentFile();
+        if (!parentDir.exists()) {
+            parentDir.mkdirs(); // Create parent directories if they don't exist
+        }
+
+        // Create the file if it doesn't exist
         if (!configFile.exists()) {
             FileOutputStream outputStream = new FileOutputStream(configFile);
             Path path = Paths.get("eessentials", fileName);
