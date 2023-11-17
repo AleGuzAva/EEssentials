@@ -7,6 +7,8 @@ package EEssentials.util;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 
+import java.util.Map;
+
 public class Location {
     private final ServerWorld world;  // The world where the location resides
     private final double x;           // The X-coordinate of the location
@@ -97,6 +99,20 @@ public class Location {
                 && (x == location.getX())
                 && (y == location.getY())
                 && (z == location.getZ());
+    }
+
+    /**
+     * Adds replacements from a location.
+     * @param replacements the map which replacements should be added to.
+     */
+
+    public void addReplacements(Map<String, String> replacements) {
+        replacements.put("{x}", String.valueOf(x));
+        replacements.put("{y}", String.valueOf(y));
+        replacements.put("{z}", String.valueOf(z));
+        replacements.put("{pitch}", String.valueOf(pitch));
+        replacements.put("{yaw}", String.valueOf(yaw));
+        replacements.put("{world}", world.getRegistryKey().getValue().toString());
     }
 }
 
