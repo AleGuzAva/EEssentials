@@ -4,19 +4,17 @@ import EEssentials.EEssentials;
 import EEssentials.util.Location;
 import EEssentials.util.cereal.ServerWorldDeserializer;
 import EEssentials.util.cereal.ServerWorldSerializer;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.reflect.TypeToken;
 import net.minecraft.server.world.ServerWorld;
 
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Manages the server's warp points and spawn locations.
@@ -27,20 +25,14 @@ public class LocationManager {
     public Location serverSpawn = null;
 
     // A map storing all warp points, mapped by their name
-    private Map<String, Location> warps = new HashMap<>();
+    public Map<String, Location> warps = new HashMap<>();
+
+    // A list that stores Mod IDs for mods that have had their data imported
+    public List<String> modImports = new ArrayList<>();
 
     // Path to the file where location data is saved
     private final Path storagePath;
 
-    private static class LocationData {
-        public Location spawn;
-        public Map<String, Location> warps;
-
-        public LocationData(Location spawn, Map<String, Location> warps) {
-            this.spawn = spawn;
-            this.warps = warps;
-        }
-    }
 
     /**
      * Initializes the LocationManager with a given storage path.
@@ -131,6 +123,7 @@ public class LocationManager {
             HashMap<String, Object> data = new HashMap<>();
             data.put("spawn", serverSpawn);
             data.put("warps", warps);
+            data.put("modImports", modImports);
             gson.toJson(data, writer);
         } catch (IOException e) {
             EEssentials.LOGGER.error("Failed to save Locations.json", e);
@@ -145,10 +138,26 @@ public class LocationManager {
         Gson gson = createCustomGson();
 
         try (Reader reader = new FileReader(getSaveFile())) {
-            LocationData data = gson.fromJson(reader, LocationData.class);
-            if (data != null) {
-                this.serverSpawn = data.spawn;
-                this.warps = data.warps;
+            JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
+            if (jsonObject == null) {
+                jsonObject = new JsonObject();
+            }
+
+            if (jsonObject.has("warps")) {
+                HashMap<String, Location> loadedWarps = gson.fromJson(jsonObject.get("warps"), new TypeToken<HashMap<String, Location>>() {}.getType());
+                if (loadedWarps != null) {
+                    this.warps.clear();
+                    this.warps.putAll(loadedWarps);
+                }
+            }
+
+            if (jsonObject.has("spawn")) {
+                this.serverSpawn = gson.fromJson(jsonObject.get("spawn"), Location.class);
+            }
+
+            if (jsonObject.has("modImports")) {
+                this.modImports.clear();
+                this.modImports = gson.fromJson(jsonObject.get("modImports"), new TypeToken<ArrayList<String>>() {}.getType());
             }
         } catch (IOException | JsonParseException e) {
             EEssentials.LOGGER.warn("Failed to load /config/EEssentials/Locations.json. File might be corrupt or missing.", e);

@@ -4,8 +4,14 @@
  */
 package EEssentials.util;
 
+import EEssentials.EEssentials;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Map;
 
@@ -41,6 +47,31 @@ public class Location {
 
     public static Location fromPlayer(ServerPlayerEntity player) {
         return new Location(player.getServerWorld(), player.getX(), player.getY(), player.getZ());
+    }
+
+    public static Location fromEssentialCommandsNbt(NbtCompound tag) {
+        return new Location(
+                EEssentials.server.getWorld(RegistryKey.of(
+                        RegistryKeys.WORLD,
+                        Identifier.tryParse(tag.getString("WorldRegistryKey"))
+                )),
+                tag.getDouble("x"),
+                tag.getDouble("y"),
+                tag.getDouble("z"),
+                tag.getFloat("headYaw"),
+                tag.getFloat("pitch")
+        );
+    }
+
+    @Override
+    public String toString() {
+        String worldName = this.world.getRegistryKey().getValue().toString();
+        return "Location: World(" + worldName + "), "
+                + "X: " + this.x + ", "
+                + "Y: " + this.y + ", "
+                + "Z: " + this.z + ", "
+                + "Pitch: " + (this.pitch == -1000 ? "unset" : this.pitch) + ", "
+                + "Yaw: " + (this.yaw == -1000 ? "unset" : this.yaw);
     }
 
     // Basic getter methods below...

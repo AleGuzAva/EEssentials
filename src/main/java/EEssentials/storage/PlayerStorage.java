@@ -13,18 +13,21 @@ import net.minecraft.server.world.ServerWorld;
 
 import java.io.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class PlayerStorage {
 
-    private UUID playerUUID;
+    public final UUID playerUUID;
     private String playerName;
     public final HashMap<String, Location> homes = new HashMap<>();
     public Boolean playedBefore = false;
     private Location previousLocation = null;
     private Location logoutLocation = null;
     private Instant lastTimeOnline = Instant.now();
+    public List<String> modImports = new ArrayList<>();
 
     /**
      * Constructor to initialize PlayerStorage with a given UUID.
@@ -149,6 +152,7 @@ public class PlayerStorage {
             jsonObject.add("previousLocation", gson.toJsonTree(previousLocation));
             jsonObject.add("logoutLocation", gson.toJsonTree(logoutLocation));
             jsonObject.add("lastTimeOnline", gson.toJsonTree(lastTimeOnline.toString()));
+            jsonObject.add("modImports", gson.toJsonTree(modImports));
             gson.toJson(jsonObject, writer);
         } catch (IOException e) {
             EEssentials.LOGGER.error("Failed to save data for UUID: " + playerUUID.toString(), e);
@@ -202,6 +206,12 @@ public class PlayerStorage {
             } else {
                 lastTimeOnline = Instant.now();
                 requiresSave = true;
+            }
+
+            // Track MODIDs of mods that we've already imported data from for this player
+            if (jsonObject.has("modImports")) {
+                modImports.clear();
+                modImports = gson.fromJson(jsonObject.get("modImports"), new TypeToken<ArrayList<String>>() {}.getType());
             }
 
             if (requiresSave) {
