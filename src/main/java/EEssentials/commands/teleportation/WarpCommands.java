@@ -1,6 +1,7 @@
 package EEssentials.commands.teleportation;
 
 import EEssentials.EEssentials;
+import EEssentials.lang.LangManager;
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -10,6 +11,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.server.network.ServerPlayerEntity;
 
+import java.util.Map;
 import java.util.Set;
 
 import static net.minecraft.server.command.CommandManager.*;
@@ -44,7 +46,7 @@ public class WarpCommands {
                             Location warpLocation = new Location(player.getServerWorld(), player.getX(), player.getY(), player.getZ(), player.getPitch(), player.getYaw());
 
                             EEssentials.storage.locationManager.setWarp(warpName, warpLocation);
-                            player.sendMessage(Text.literal("Warp " + warpName + " set!"), false);
+                            LangManager.send(player, "Warp-Set", Map.of("{warp}", warpName));
                             return 1;
                         })
                 )
@@ -64,10 +66,10 @@ public class WarpCommands {
 
                             if (EEssentials.storage.locationManager.getWarp(warpName) != null) {
                                 EEssentials.storage.locationManager.deleteWarp(warpName);
-                                player.sendMessage(Text.literal("Warp " + warpName + " deleted!"), false);
+                                LangManager.send(player, "Warp-Delete", Map.of("{warp}", warpName));
                                 return 1;
                             } else {
-                                player.sendMessage(Text.literal("Warp " + warpName + " does not exist!"), false);
+                                LangManager.send(player, "Invalid-Warp", Map.of("{input}", warpName));
                                 return 0;
                             }
                         })
@@ -79,9 +81,7 @@ public class WarpCommands {
         dispatcher.register(literal("warp")
                 .requires(Permissions.require(WARP_PERMISSION_NODE, 2))
                 .then(argument("name", StringArgumentType.word())
-                        .suggests((ctx, builder) -> {
-                            return CommandSource.suggestMatching(EEssentials.storage.locationManager.getWarpNames(), builder);
-                        })
+                        .suggests((ctx, builder) -> CommandSource.suggestMatching(EEssentials.storage.locationManager.getWarpNames(), builder))
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             String warpName = StringArgumentType.getString(ctx, "name").toLowerCase();
@@ -90,7 +90,7 @@ public class WarpCommands {
                         })
                 )
                 .executes(ctx -> {
-                    ctx.getSource().sendError(Text.literal("Invalid Warp. Please do `/warp (name)`. To see all available warps, type in `/warps`."));
+                    LangManager.send(ctx.getSource(), "Invalid-Warp-Command");
                     return 0;
                 })
         );
@@ -106,9 +106,9 @@ public class WarpCommands {
 
                     if (!warpNames.isEmpty()) {
                         String warpList = String.join(", ", warpNames);
-                        player.sendMessage(Text.literal("Available warps: " + warpList), false);
+                        LangManager.send(player, "Warp-List", Map.of("{warps}", warpList));
                     } else {
-                        player.sendMessage(Text.literal("No warps are currently set."), false);
+                        LangManager.send(player, "Warp-List-Empty");
                     }
 
                     return 1;
@@ -120,10 +120,10 @@ public class WarpCommands {
         Location location = EEssentials.storage.locationManager.getWarp(warpName);
         if (location != null) {
             location.teleport(player);
-            player.sendMessage(Text.literal("Teleported to warp " + warpName + "!"), false);
+            LangManager.send(player, "Teleporting-To-Warp", Map.of("{warp}", warpName));
             return 1;
         } else {
-            player.sendMessage(Text.literal("Invalid Warp. Please do `/warp (name)`. To see all available warps, type in `/warps`."), false);
+            LangManager.send(player, "Invalid-Warp", Map.of("{input}", warpName));
             return 0;
         }
     }

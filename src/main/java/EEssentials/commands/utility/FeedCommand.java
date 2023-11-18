@@ -1,5 +1,6 @@
 package EEssentials.commands.utility;
 
+import EEssentials.lang.LangManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -9,6 +10,8 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.Map;
 
 /**
  * Provides command to feed the player.
@@ -57,12 +60,14 @@ public class FeedCommand {
         player.getHungerManager().setSaturationLevel(20); // Max saturation level is 20
 
         if (player.equals(source.getPlayer())) {
-            player.sendMessage(Text.of("You have been fed."), false);
+            LangManager.send(player, "Feed-Self");  // Player feeding themselves
         } else {
-            source.sendMessage(Text.of("Fed " + player.getName().getString() + "."));
+            LangManager.send(player, "Feed-Other-Notify", Map.of("{source}", source.getName()));  // Player being fed by someone else
+            LangManager.send(source, "Feed-Other", Map.of("{player}", player.getName().getString()));  // The feeder receives this message
         }
 
         return 1;
     }
+
 
 }

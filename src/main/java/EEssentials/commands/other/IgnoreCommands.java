@@ -1,5 +1,6 @@
 package EEssentials.commands.other;
 
+import EEssentials.lang.LangManager;
 import EEssentials.util.IgnoreManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -8,8 +9,8 @@ import static net.minecraft.server.command.CommandManager.*;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -51,14 +52,14 @@ public class IgnoreCommands {
         dispatcher.register(
                 literal("ignorelist")
                         .requires(Permissions.require(IGNORE_PERMISSION_NODE, 2))
-                        .executes(ctx -> displayIgnoredPlayers(ctx))
+                        .executes(IgnoreCommands::displayIgnoredPlayers)
         );
     }
 
     /**
      * Adds the specified player to the ignore list of the executor.
      *
-     * @param ctx The command context.
+     * @param ctx    The command context.
      * @param target The player to be ignored.
      * @return 1 if successful, 0 otherwise.
      */
@@ -70,21 +71,20 @@ public class IgnoreCommands {
 
         // Check if the target is unignorable before proceeding
         if (Permissions.check(target, UNIGNORABLE_PERMISSION_NODE, 2)) {
-            player.sendMessage(Text.of(target.getName().getString() + " cannot be ignored."), false);
+            LangManager.send(player, "Ignore-Unignorable", Map.of("{player}", target.getName().getString()));
             return 1;
         }
 
         // Using the IgnoreManager to handle the actual ignore logic
         IgnoreManager.ignorePlayer(player, target);
-
-        player.sendMessage(Text.of("You've ignored " + target.getName().getString()), false);
+        LangManager.send(player, "Ignore", Map.of("{player}", target.getName().getString()));
         return 1;
     }
 
     /**
      * Removes the specified player from the ignore list of the executor.
      *
-     * @param ctx The command context.
+     * @param ctx    The command context.
      * @param target The player to be unignored.
      * @return 1 if successful, 0 otherwise.
      */
@@ -96,8 +96,7 @@ public class IgnoreCommands {
 
         // Using the IgnoreManager to handle the actual unignore logic
         IgnoreManager.unignorePlayer(player, target);
-
-        player.sendMessage(Text.of("You've unignored " + target.getName().getString()), false);
+        LangManager.send(player, "Unignore", Map.of("{player}", target.getName().getString()));
         return 1;
     }
 
@@ -116,22 +115,24 @@ public class IgnoreCommands {
         Set<UUID> ignoredPlayerUUIDs = IgnoreManager.getIgnoredPlayers(player);
 
         if (ignoredPlayerUUIDs.isEmpty()) {
-            player.sendMessage(Text.of("You haven't ignored any players."), false);
+            LangManager.send(player, "Ignore-List-Empty");
             return 1;
         }
 
-        StringBuilder message = new StringBuilder("Ignored players: ");
+        StringBuilder ignoredPlayersList = new StringBuilder();
         for (UUID ignoredUUID : ignoredPlayerUUIDs) {
             ServerPlayerEntity ignoredPlayer = source.getServer().getPlayerManager().getPlayer(ignoredUUID);
             if (ignoredPlayer != null) {
-                message.append(ignoredPlayer.getName().getString()).append(", ");
+                ignoredPlayersList.append(ignoredPlayer.getName().getString()).append(", ");
             }
         }
 
-        // Remove trailing comma and space
-        message.setLength(message.length() - 2);
+        if (ignoredPlayersList.length() > 0) {
+            // Remove trailing comma and space
+            ignoredPlayersList.setLength(ignoredPlayersList.length() - 2);
+        }
 
-        player.sendMessage(Text.of(message.toString()), false);
+        LangManager.send(player, "Ignore-List", Map.of("{players}", ignoredPlayersList.toString()));
         return 1;
     }
 }

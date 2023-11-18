@@ -1,16 +1,19 @@
 package EEssentials.commands.teleportation;
 
 import EEssentials.EEssentials;
+import EEssentials.lang.LangManager;
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 
-import static net.minecraft.server.command.CommandManager.*;
+import java.util.Map;
+
+import static net.minecraft.server.command.CommandManager.argument;
+import static net.minecraft.server.command.CommandManager.literal;
 
 /**
  * Defines the /spawn related commands to manage a universal spawn location.
@@ -35,8 +38,7 @@ public class SpawnCommands {
                     if (player == null) return 0;
 
                     EEssentials.storage.locationManager.setSpawn(Location.fromPlayer(player));
-                    player.sendMessage(Text.literal("Set Spawn to current location."), false);
-
+                    LangManager.send(player, "Spawn-Set");
                     return 1;
                 })
         );
@@ -44,7 +46,7 @@ public class SpawnCommands {
         // Teleport the player or the target to the universal spawn location.
         dispatcher.register(literal("spawn")
                 .requires(Permissions.require(SPAWN_SELF_PERMISSION_NODE, 2))
-                .executes(ctx -> teleportToSpawn(ctx)) // Teleport the executing player
+                .executes(SpawnCommands::teleportToSpawn) // Teleport the executing player
                 .then(argument("target", EntityArgumentType.player())
                         .requires(Permissions.require(SPAWN_OTHER_PERMISSION_NODE, 2))
                         .executes(ctx -> {
@@ -56,7 +58,7 @@ public class SpawnCommands {
 
     private static int teleportToSpawn(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity... targets) {
         ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player = targets.length > 0 ? targets[0] : ctx.getSource().getPlayer();
+        ServerPlayerEntity player = targets.length > 0 ? targets[0] : source.getPlayer();
         if (player == null) return 0;
 
         Location spawnLocation = EEssentials.storage.locationManager.serverSpawn;
@@ -64,16 +66,14 @@ public class SpawnCommands {
             spawnLocation.teleport(player);
 
             if (player.equals(source.getPlayer())) {
-                player.sendMessage(Text.of("Teleported to spawn."), false);
+                LangManager.send(player, "Teleporting-To-Spawn");
             } else {
-                source.sendMessage(Text.of("Teleported " + player.getName().getString() + " to spawn."));
+                LangManager.send(source, "Teleporting-Player-To-Spawn", Map.of("{player}", player.getName().getString()));
             }
-
             return 1;
         } else {
-            player.sendMessage(Text.of("Spawn Location not set."), false);
-            return 0; // Return a failure code.
+            LangManager.send(player, "Spawn-Not-Set");
+            return 0;
         }
     }
-
 }

@@ -1,5 +1,6 @@
 package EEssentials.commands.teleportation;
 
+import EEssentials.lang.LangManager;
 import EEssentials.storage.PlayerStorage;
 import EEssentials.storage.StorageManager;
 import com.mojang.authlib.GameProfile;
@@ -15,6 +16,7 @@ import net.minecraft.text.Text;
 import EEssentials.util.Location;
 
 import java.io.File;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -44,32 +46,30 @@ public class TPOfflineCommand {
 
         // If the target player is online, notify the executor
         if (source.getServer().getPlayerManager().getPlayer(targetName) != null) {
-            source.sendMessage(Text.of(targetName + " is currently online."));
+            LangManager.send(source, "TPOffline-Online-Notify", Map.of("{player}", targetName));
             return 1;
         }
 
         GameProfile profile = getProfileForName(targetName);
         if (profile == null) {
-            source.sendMessage(Text.of("Error retrieving UUID for " + targetName));
+            LangManager.send(source, "Invalid-Player", Map.of("{input}", targetName));
             return 0;
         }
 
         PlayerStorage storage = PlayerStorage.fromPlayerUUID(profile.getId());
         if (storage == null) {
-            source.sendMessage(Text.of("No data found for " + targetName));
+            LangManager.send(source, "TPOffline-No-Data", Map.of("{player}", targetName));
             return 0;
         }
 
         Location lastLogoutLocation = storage.getLogoutLocation();
-
         if (lastLogoutLocation == null) {
-            source.sendMessage(Text.of(targetName + " does not have a saved logout location."));
+            LangManager.send(source, "TPOffline-No-Logout-Location", Map.of("{player}", targetName));
             return 1;
         }
 
         lastLogoutLocation.teleport(executor);
-
-        source.sendMessage(Text.of("Teleported to " + targetName + "'s last logout location."));
+        LangManager.send(source, "TPOffline-Success", Map.of("{player}", targetName));
 
         return 1;
     }

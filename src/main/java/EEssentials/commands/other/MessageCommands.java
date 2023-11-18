@@ -1,6 +1,7 @@
 package EEssentials.commands.other;
 
 import EEssentials.commands.AliasedCommand;
+import EEssentials.lang.LangManager;
 import EEssentials.util.IgnoreManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -96,9 +97,16 @@ public class MessageCommands {
      * @param message The message to be sent.
      */
     private static void sendToSocialSpies(CommandContext<ServerCommandSource> ctx, Text message) {
+        // Retrieve the Social Spy prefix
+        String socialSpyPrefix = LangManager.getLang("Prefix-Social-Spy");
+
+        // Create a new Text object with the prefix and original message
+        Text prefixedMessage = Text.literal(socialSpyPrefix).append(message);
+
         for (ServerPlayerEntity spy : ctx.getSource().getServer().getPlayerManager().getPlayerList()) {
             if (SocialSpyCommand.isSocialSpyEnabled(spy)) {
-                spy.sendMessage(message, false);
+                // Send the prefixed message to the spy
+                spy.sendMessage(prefixedMessage, false);
             }
         }
     }
@@ -118,27 +126,26 @@ public class MessageCommands {
 
         if (player == null || target == null) return 0;
 
-        Text senderMessage = Text.of("[me -> " + target.getName().getString() + "] " + message);
-        Text targetMessage = Text.of("[" + player.getName().getString() + " -> me] " + message);
+        Map<String, String> replacements = new HashMap<>();
+        replacements.put("{player}", target.getName().getString());
+        replacements.put("{message}", message);
 
         // Check if the target has ignored the sender
         if (IgnoreManager.hasIgnored(target, player)) {
-            player.sendMessage(Text.of(target.getName().getString() + " has you on their ignore list. You cannot send them a message"), false);
+            LangManager.send(player, "Ignore", replacements); // Update this line with the correct lang key
             return 1;
         }
 
-        target.sendMessage(targetMessage, false);
-        player.sendMessage(senderMessage, false);
+        LangManager.send(target, "Message-Receive", replacements);
+        LangManager.send(player, "Message-Send", replacements);
 
         // Social Spy
-        Text socialSpyMessage = Text.of("[" + player.getName().getString() + " -> " + target.getName().getString() + "] " + message);
-        sendToSocialSpies(ctx, socialSpyMessage);
+        sendToSocialSpies(ctx, Text.of("[" + player.getName().getString() + " -> " + target.getName().getString() + "] " + message));
 
         // Store this interaction so that the target can reply back
         storeLastSender(target, player);
 
         return 1;
-
     }
 
     private static int sendReply(CommandContext<ServerCommandSource> ctx, String message) {
@@ -146,7 +153,7 @@ public class MessageCommands {
         ServerPlayerEntity player = source.getPlayer();
 
         if (!lastMessageSenders.containsKey(player)) {
-            player.sendMessage(Text.literal("You don't have anyone to reply to."), false);
+            LangManager.send(player, "Invalid-Player-Only"); // Update this line with the correct lang key
             return 0;
         }
 
@@ -154,25 +161,25 @@ public class MessageCommands {
 
         // Check if the target has ignored the sender
         if (IgnoreManager.hasIgnored(target, player)) {
-            player.sendMessage(Text.of(target.getName().getString() + " has you on their ignore list. You cannot send them a message"), false);
+            LangManager.send(player, "Ignore", Map.of("player", target.getName().getString())); // Update this line with the correct lang key
             return 1;
         }
 
-        Text senderMessage = Text.of("[me -> " + target.getName().getString() + "] " + message);
-        Text targetMessage = Text.of("[" + player.getName().getString() + " -> me] " + message);
+        Map<String, String> replacements = new HashMap<>();
+        replacements.put("{player}", target.getName().getString());
+        replacements.put("{message}", message);
 
-
-        target.sendMessage(targetMessage, false);
-        player.sendMessage(senderMessage, false);
+        LangManager.send(target, "Message-Send", replacements);
+        LangManager.send(player, "Message-Receive", replacements);
 
         // Social Spy
-        Text socialSpyMessage = Text.of("[" + player.getName().getString() + " -> " + target.getName().getString() + "] " + message);
-        sendToSocialSpies(ctx, socialSpyMessage);
+        sendToSocialSpies(ctx, Text.of("[" + player.getName().getString() + " -> " + target.getName().getString() + "] " + message));
 
         // Update the last sender for potential back-and-forth replies
         storeLastSender(target, player);
 
         return 1;
     }
+
 
 }

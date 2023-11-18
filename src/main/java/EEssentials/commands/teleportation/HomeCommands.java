@@ -1,6 +1,7 @@
 package EEssentials.commands.teleportation;
 
 import EEssentials.EEssentials;
+import EEssentials.lang.LangManager;
 import EEssentials.storage.PlayerStorage;
 import EEssentials.storage.StorageManager;
 import EEssentials.util.Location;
@@ -14,12 +15,11 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -54,7 +54,9 @@ public class HomeCommands {
                             // If the new home name isn't already a home, we should check if the player has enough sethomes left
                             if (!playerStorage.homes.containsKey(homeName)) {
                                 if (playerStorage.homes.keySet().size() >= EEssentials.perms.getMaxHomes(player)) {
-                                    player.sendMessage(Text.literal("You've reached your maximum amount of homes (" + EEssentials.perms.getMaxHomes(player) + "), delete one to set another."));
+                                    Map<String, String> replacements = new HashMap<>();
+                                    replacements.put("{maxhomes}", String.valueOf(EEssentials.perms.getMaxHomes(player)));
+                                    LangManager.send(player, "Home-Max-Limit-Message", replacements);
                                     return 0;
                                 }
                             }
@@ -65,7 +67,7 @@ public class HomeCommands {
                             );
                             playerStorage.save();
 
-                            player.sendMessage(Text.literal("Home " + homeName + " has been set to the current location."), false);
+                            LangManager.send(player, "Home-Set", Map.of("{home}", homeName));
                             return 1;
                         })
                 )
@@ -87,10 +89,10 @@ public class HomeCommands {
                             playerStorage.save();
 
                             if (location != null) {
-                                player.sendMessage(Text.literal("Home " + homeName + " has been removed."), false);
+                                LangManager.send(player, "Home-Delete", Map.of("{home}", homeName));
                                 return 1;
                             } else {
-                                player.sendMessage(Text.literal("Home " + homeName + " does not exist!"), false);
+                                LangManager.send(player, "Invalid-Home", Map.of("{input}", homeName));
                                 return 0;
                             }
                         })
@@ -100,13 +102,14 @@ public class HomeCommands {
         // Regular /home command
         dispatcher.register(literal("home")
                 .requires(src -> Permissions.check(src, HOME_PERMISSION_NODE, 2))
-                .executes(ctx -> listHomes(ctx)) // If just /home is executed
+                .executes(HomeCommands::listHomes) // If just /home is executed
                 .then(argument("name", StringArgumentType.word())
                         .suggests(HomeCommands::suggestHomes)
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             String homeName = StringArgumentType.getString(ctx, "name");
-                            return teleportToHome(ctx, player, homeName);
+                            return teleportToHome(player, homeName);
+
                         }))
         );
 
@@ -133,15 +136,15 @@ public class HomeCommands {
 
         PlayerStorage playerStorage = EEssentials.storage.getPlayerStorage(player);
         if (playerStorage.homes.isEmpty()) {
-            player.sendMessage(Text.literal("You have no homes set."), false);
+            LangManager.send(player, "Home-List-Empty");
         } else {
-            player.sendMessage(Text.literal("Homes: " + String.join(", ", playerStorage.homes.keySet())));
+            LangManager.send(player, "Home-List", Map.of("{homes}", String.join(", ", playerStorage.homes.keySet())));
         }
 
         return 1;
     }
 
-    private static int teleportToHome(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player, String homeName) {
+    private static int teleportToHome(ServerPlayerEntity player, String homeName) {
         if (player == null) return 0;
 
         PlayerStorage playerStorage = EEssentials.storage.getPlayerStorage(player);
@@ -149,10 +152,10 @@ public class HomeCommands {
 
         if (location != null) {
             location.teleport(player);
-            player.sendMessage(Text.literal("Teleporting to " + homeName + "."), false);
+            LangManager.send(player, "Teleporting-To-Home", Map.of("{home}", homeName));
             return 1;
         } else {
-            player.sendMessage(Text.literal("Invalid Home. Please do `/home (name)`. To see all available homes, type in `/homes`."), false);
+            LangManager.send(player, "Invalid-Home", Map.of("{input}", homeName));
             return 0;
         }
     }
@@ -170,7 +173,7 @@ public class HomeCommands {
         if (profile != null) {
             targetUUID = profile.getId();
         } else {
-            source.sendMessage(Text.of("Unknown player: " + targetName));
+            LangManager.send(source, "Invalid-Player", Map.of("{input}", targetName));
             return 0;
         }
 
@@ -179,10 +182,10 @@ public class HomeCommands {
 
         if (location != null) {
             location.teleport(source.getPlayer());
-            source.sendMessage(Text.of("Teleported to " + targetName + "'s home named " + homeName + "."));
+            LangManager.send(source, "Teleporting-To-Other-Home", Map.of("{home}", homeName, "{target}", targetName));
             return 1;
         } else {
-            source.sendMessage(Text.of(targetName + " does not have a home named " + homeName + "."));
+            LangManager.send(source, "Invalid-Home", Map.of("{input}", homeName));
             return 0;
         }
     }

@@ -120,6 +120,7 @@ public class EEssentials implements ModInitializer {
             AscendCommand.register(dispatcher);
             DescendCommand.register(dispatcher);
             SmiteCommand.register(dispatcher);
+            ReloadCommand.register(dispatcher);
 
             List<String> allTextCommands = getTextCommands();
             for(String textCommand : allTextCommands) {

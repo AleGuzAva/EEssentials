@@ -1,5 +1,6 @@
 package EEssentials.commands.utility;
 
+import EEssentials.lang.LangManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -11,6 +12,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.GameMode;
+
+import java.util.Map;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -105,12 +108,13 @@ public class GamemodeAliasesCommands {
 
         player.changeGameMode(gameMode);
         String formattedGameModeName = formatGameModeName(gameMode);
+        Map<String, String> replacements = Map.of("{gameMode}", formattedGameModeName, "{player}", player.getName().getString(), "{source}", source.getName());
 
         if (player.equals(source.getPlayer())) {
-            player.sendMessage(Text.literal("Set own game mode to " + formattedGameModeName + " Mode.").formatted(Formatting.WHITE), false);
+            LangManager.send(source, "GameMode-Change-Self", replacements);
         } else {
-            player.sendMessage(Text.literal("Your game mode has been set to " + formattedGameModeName + " Mode.").formatted(Formatting.WHITE), false);
-            source.sendMessage(Text.literal("Set " + player.getName().getString() + "'s game mode to " + formattedGameModeName + " Mode.").formatted(Formatting.WHITE));
+            LangManager.send(player, "GameMode-Change-Other-Notify", replacements);
+            LangManager.send(source, "GameMode-Change-Other", replacements);
         }
         return 1;
     }

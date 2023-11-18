@@ -1,5 +1,6 @@
 package EEssentials.commands.utility;
 
+import EEssentials.lang.LangManager;
 import EEssentials.mixins.PlayerAbilitiesMixin;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -11,6 +12,8 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.Map;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -77,13 +80,19 @@ public class SpeedCommand {
      */
     private static int executeSetFlightSpeed(CommandContext<ServerCommandSource> ctx, float speedMultiplier) {
         ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player;
-        player = source.getPlayer();
+        ServerPlayerEntity player = source.getPlayer();
 
-        // Adjusts the flight speed of the player.
+        // Adjust the flight speed
         ((PlayerAbilitiesMixin) player.getAbilities()).setFlySpeed(0.05f * speedMultiplier);
         player.sendAbilitiesUpdate();
-        source.sendMessage(Text.of("Set flight speed to " + speedMultiplier + "x"));
+
+        // Send appropriate messages
+        Map<String, String> replacements = Map.of(
+                "{speed-option}", "flight",
+                "{speed-multiplier}", String.valueOf(speedMultiplier),
+                "{player}", player.getName().getString()
+        );
+        LangManager.send(source, "Speed-Set-Self", replacements);
 
         return 1;
     }
@@ -97,13 +106,19 @@ public class SpeedCommand {
      */
     private static int executeSetWalkSpeed(CommandContext<ServerCommandSource> ctx, float speedMultiplier) {
         ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player;
-        player = source.getPlayer();
+        ServerPlayerEntity player = source.getPlayer();
 
-        // Adjusts the walking speed of the player.
+        // Adjust the walking speed
         ((PlayerAbilitiesMixin) player.getAbilities()).setWalkSpeed(0.1f * speedMultiplier);
         player.sendAbilitiesUpdate();
-        source.sendMessage(Text.of("Set walking speed to " + speedMultiplier + "x"));
+
+        // Send appropriate messages
+        Map<String, String> replacements = Map.of(
+                "{speed-option}", "walking",
+                "{speed-multiplier}", String.valueOf(speedMultiplier),
+                "{player}", player.getName().getString()
+        );
+        LangManager.send(source, "Speed-Set-Self", replacements);
 
         return 1;
     }

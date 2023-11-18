@@ -1,10 +1,14 @@
 package EEssentials.commands.utility;
 
+import EEssentials.lang.LangManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
+
+import java.util.Map;
+
 import static net.minecraft.server.command.CommandManager.*;
 
 /**
@@ -40,7 +44,8 @@ public class CheckTimeCommand {
         long timeOfDay = source.getWorld().getTimeOfDay() % 24000;
         String formattedTime = formatTime(timeOfDay);
 
-        source.sendMessage(Text.of("Current World Time: " + formattedTime));
+        // Use LangManager to send the formatted time
+        LangManager.send(source, "CheckTime", Map.of("{world-time}", formattedTime));
 
         return 1;
     }
