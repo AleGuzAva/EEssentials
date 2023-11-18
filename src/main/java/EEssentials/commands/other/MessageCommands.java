@@ -127,7 +127,8 @@ public class MessageCommands {
         if (player == null || target == null) return 0;
 
         Map<String, String> replacements = new HashMap<>();
-        replacements.put("{player}", target.getName().getString());
+        replacements.put("{receiver}", target.getName().getString());
+        replacements.put("{sender}", player.getName().getString());
         replacements.put("{message}", message);
 
         // Check if the target has ignored the sender
@@ -152,7 +153,7 @@ public class MessageCommands {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        if (!lastMessageSenders.containsKey(player)) {
+        if (!lastMessageSenders.containsKey(player) || player == null) {
             LangManager.send(player, "Invalid-Player-Only"); // Update this line with the correct lang key
             return 0;
         }
@@ -166,11 +167,12 @@ public class MessageCommands {
         }
 
         Map<String, String> replacements = new HashMap<>();
-        replacements.put("{player}", target.getName().getString());
+        replacements.put("{receiver}", target.getName().getString());
+        replacements.put("{sender}", player.getName().getString());
         replacements.put("{message}", message);
 
-        LangManager.send(target, "Message-Send", replacements);
-        LangManager.send(player, "Message-Receive", replacements);
+        LangManager.send(player, "Message-Send", replacements);
+        LangManager.send(target, "Message-Receive", replacements);
 
         // Social Spy
         sendToSocialSpies(ctx, Text.of("[" + player.getName().getString() + " -> " + target.getName().getString() + "] " + message));

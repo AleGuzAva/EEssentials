@@ -7,8 +7,8 @@ Invalid-Permission-All-Target: "<red>You don't have permission to target all pla
 Invalid-Player-Only: "<red>This command can only be used by a player!"
 
 # Private Messages/Whispers
-Message-Receive: "<gold>[<red>{player} <gold>-> <red>me<gold>] <white>{message}"
-Message-Send: "<gold>[<red>me <gold>-> <red>{player}<gold>] <white>{message}"
+Message-Receive: "<gold>[<red>{sender} <gold>-> <red>me<gold>] <white>{message}"
+Message-Send: "<gold>[<red>me <gold>-> <red>{receiver}<gold>] <white>{message}"
 SocialSpy-Enabled: "<gold>SocialSpy enabled!"
 SocialSpy-Disabled: "<gold>SocialSpy disabled!"
 Prefix-Social-Spy: "<white>[<gold>SS<white>] "
