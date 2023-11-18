@@ -30,10 +30,10 @@ public class LangManager {
 
     public static void send(@NotNull Audience audience, @NotNull String langKey,
                             @Nullable Map<String, String> replacements) {
-        send(audience, "Prefix", langKey, replacements);
+        send(audience, null, langKey, replacements);
     }
 
-    public static void send(@NotNull Audience audience, @NotNull String prefixKey,
+    public static void send(@NotNull Audience audience, @Nullable String prefixKey,
                                     @NotNull String langKey, @Nullable Map<String, String> replacements) {
         String lang = getLang(langKey);
         if(lang == null) return;

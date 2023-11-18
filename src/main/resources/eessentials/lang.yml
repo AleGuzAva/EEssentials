@@ -1,5 +1,4 @@
 # We Support Legacy and MiniMessage Formatting!
-Prefix: "<gold>[EEssentials]<reset> "
 
 # Errors
 Invalid-Player: "<red>Error: <dark_red>{input} <red>not found."
