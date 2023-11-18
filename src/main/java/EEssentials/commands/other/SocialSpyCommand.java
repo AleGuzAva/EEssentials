@@ -1,11 +1,11 @@
 package EEssentials.commands.other;
 
+import EEssentials.lang.LangManager;
 import com.mojang.brigadier.CommandDispatcher;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -29,9 +29,9 @@ public class SocialSpyCommand {
                     ServerPlayerEntity player = ctx.getSource().getPlayer();
                     toggleSocialSpyFor(player);
                     if (isSocialSpyEnabled(player)) {
-                        player.sendMessage(Text.of("SocialSpy enabled!"), false);
+                        LangManager.send(player, "SocialSpy-Enabled");
                     } else {
-                        player.sendMessage(Text.of("SocialSpy disabled!"), false);
+                        LangManager.send(player, "SocialSpy-Disabled");
                     }
                     return 1;
                 }));

@@ -1,5 +1,6 @@
 package EEssentials.commands.utility;
 
+import EEssentials.lang.LangManager;
 import EEssentials.screens.DisposalScreen;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -37,7 +38,7 @@ public class DisposalCommand {
 
     private static int openDisposal(CommandContext<ServerCommandSource> ctx) {
         ServerPlayerEntity player = ctx.getSource().getPlayer();
-        player.sendMessage(Text.of("Opening disposal..."), false);
+        LangManager.send(player, "Disposal");
         player.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inventory, pl) -> new DisposalScreen(syncId, inventory), Text.of("Disposal"))); // Set the GUI title to "Disposal"
         return 1;
     }

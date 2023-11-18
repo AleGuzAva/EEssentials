@@ -1,13 +1,13 @@
 package EEssentials.commands.teleportation;
 
 import EEssentials.EEssentials;
+import EEssentials.lang.LangManager;
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import static net.minecraft.server.command.CommandManager.*;
 
 public class BackCommand {
@@ -40,10 +40,10 @@ public class BackCommand {
         Location backLocation = EEssentials.storage.getPlayerStorage(player).getPreviousLocation();
         if (backLocation != null) {
             backLocation.teleport(player);
-            player.sendMessage(Text.literal("Teleported back to your last location."), false);
+            LangManager.send(player, "Teleport-Back");
             return 1;
         } else {
-            player.sendMessage(Text.literal("No last location found."), false);
+            LangManager.send(player, "Teleport-Back-None");
             return 0;
         }
     }

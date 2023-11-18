@@ -1,6 +1,7 @@
 package EEssentials.commands.teleportation;
 
 import EEssentials.commands.AliasedCommand;
+import EEssentials.lang.LangManager;
 import EEssentials.util.IgnoreManager;
 import EEssentials.util.Location;
 import com.mojang.brigadier.CommandDispatcher;
@@ -10,7 +11,6 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
 import java.util.*;
 
@@ -68,21 +68,23 @@ public class TPACommands {
                             ServerPlayerEntity requester = ctx.getSource().getPlayer();
                             ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
 
-                            // Check if the target has ignored the requester
+                            // Replace text messages with LangManager.send
+                            Map<String, String> replacements = new HashMap<>();
+                            replacements.put("{target}", target.getName().getString());
+                            replacements.put("{requester}", requester.getName().getString());
+
                             if (IgnoreManager.hasIgnored(target, requester)) {
-                                requester.sendMessage(Text.of(target.getName().getString() + " has you on their ignore list. You cannot send them a teleport request."), false);
+                                LangManager.send(requester, "Ignore-Teleport-Request", replacements);
                                 return 0;
                             }
 
-                            // Check if the target has teleport requests toggled off.
                             if (teleportToggleOff.contains(target.getUuid())) {
-                                requester.sendMessage(Text.literal(target.getName().getString() + " has incoming teleport requests disabled."), false);
+                                LangManager.send(requester, "Teleport-Requests-Disabled", replacements);
                                 return 0;
                             }
 
-                            // Check if requester is the same as target.
                             if (requester.equals(target)) {
-                                requester.sendMessage(Text.literal("You can't send teleport requests to yourself!"), false);
+                                LangManager.send(requester, "Teleport-Request-Self");
                                 return 0;
                             }
 
@@ -94,8 +96,8 @@ public class TPACommands {
                                     .add(new TeleportRequest(requester, TeleportRequest.RequestType.TPA));
 
                             // Notify both players.
-                            requester.sendMessage(Text.literal("You have sent a teleportation request to " + target.getName().getString() + "."), false);
-                            target.sendMessage(Text.literal(requester.getName().getString() + " wants to teleport to you. Use /tpaccept to allow."), false);
+                            LangManager.send(requester, "TPA-Request-Send", replacements);
+                            LangManager.send(target, "TPA-Request-Receive", replacements);
 
                             return 1;
                         })));
@@ -108,21 +110,25 @@ public class TPACommands {
                             ServerPlayerEntity requester = ctx.getSource().getPlayer();
                             ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
 
+                            Map<String, String> replacements = new HashMap<>();
+                            replacements.put("{target}", target.getName().getString());
+                            replacements.put("{requester}", requester.getName().getString());
+
                             // Check if the target has ignored the requester
                             if (IgnoreManager.hasIgnored(target, requester)) {
-                                requester.sendMessage(Text.of(target.getName().getString() + " has you on their ignore list. You cannot send them a teleport request."), false);
+                                LangManager.send(requester, "Ignore-Teleport-Request", replacements);
                                 return 0;
                             }
 
                             // Check if the target has teleport requests toggled off.
                             if (teleportToggleOff.contains(target.getUuid())) {
-                                requester.sendMessage(Text.literal(target.getName().getString() + " has incoming teleport requests disabled."), false);
+                                LangManager.send(requester, "Teleport-Requests-Disabled", replacements);
                                 return 0;
                             }
 
                             // Check if requester is the same as target.
                             if (requester.equals(target)) {
-                                requester.sendMessage(Text.literal("You can't send teleport requests to yourself!"), false);
+                                LangManager.send(requester, "Teleport-Request-Self");
                                 return 0;
                             }
 
@@ -134,8 +140,8 @@ public class TPACommands {
                                     .add(new TeleportRequest(requester, TeleportRequest.RequestType.TPAHERE));
 
                             // Notify both players.
-                            requester.sendMessage(Text.literal("You have sent a request for " + target.getName().getString() + " to teleport to you."), false);
-                            target.sendMessage(Text.literal(requester.getName().getString() + " wants you to teleport to them. Use /tpaccept to allow."), false);
+                            LangManager.send(requester, "TPAHere-Request-Send", replacements);
+                            LangManager.send(target, "TPAHere-Request-Receive", replacements);
 
                             return 1;
                         })));
@@ -154,19 +160,23 @@ public class TPACommands {
                                 TeleportRequest request = teleportRequests.get(target).remove(0); // Remove the oldest request
                                 ServerPlayerEntity requester = request.requester;
 
+                                Map<String, String> replacements = new HashMap<>();
+                                replacements.put("{requester}", requester.getName().getString());
+                                replacements.put("{target}", target.getName().getString());
+
                                 // Depending on the type of request, perform the appropriate teleportation
                                 if (request.type == TeleportRequest.RequestType.TPA) {
                                     Location targetLocation = new Location(target.getServerWorld(), target.getX(), target.getY(), target.getZ());
                                     targetLocation.teleport(requester);
 
-                                    requester.sendMessage(Text.literal("You have teleported to " + target.getName().getString() + "."), false);
-                                    target.sendMessage(Text.literal(requester.getName().getString() + " has teleported to you."), false);
+                                    LangManager.send(requester, "TPA-Accept", replacements);
+                                    LangManager.send(target, "Teleporting-Players");
                                 } else {  // TeleportRequest.RequestType.TPAHERE
                                     Location requesterLocation = new Location(requester.getServerWorld(), requester.getX(), requester.getY(), requester.getZ());
                                     requesterLocation.teleport(target);
 
-                                    requester.sendMessage(Text.literal(target.getName().getString() + " has teleported to you."), false);
-                                    target.sendMessage(Text.literal("You have teleported to " + requester.getName().getString() + "."), false);
+                                    LangManager.send(target, "Teleporting-Players");
+                                    LangManager.send(target, "TPA-Accept", replacements);
                                 }
 
                                 // If there are no more requests pending for the target, remove them from the map
@@ -174,7 +184,7 @@ public class TPACommands {
                                     teleportRequests.remove(target);
                                 }
                             } else {
-                                target.sendMessage(Text.literal("No teleportation requests pending."), false);
+                                LangManager.send(target, "TPA-Request-None");
                             }
 
                             return 1;
@@ -186,8 +196,6 @@ public class TPACommands {
                 return new String[]{"tpyes"};
             }
         }.registerWithAliases(dispatcher);
-
-        // Additional commands, such as /tpdeny, /tpacancel, and /tptoggle can be continued in a similar manner...
 
         // Register /tpdeny, /tpno
         // Allows a player to deny a pending teleportation request.
@@ -202,14 +210,18 @@ public class TPACommands {
                                 TeleportRequest request = teleportRequests.get(target).remove(0); // Remove and get the first request.
                                 ServerPlayerEntity requester = request.requester;
 
-                                requester.sendMessage(Text.literal(target.getName().getString() + " has denied your teleportation request."), false);
-                                target.sendMessage(Text.literal("You have denied " + requester.getName().getString() + "'s teleportation request."), false);
+                                Map<String, String> replacements = new HashMap<>();
+                                replacements.put("{target}", target.getName().getString());
+                                replacements.put("{requester}", requester.getName().getString());
+
+                                LangManager.send(requester, "TPA-Deny", replacements);
+                                LangManager.send(target, "TPA-Deny", replacements);
 
                                 if (teleportRequests.get(target).isEmpty()) {
                                     teleportRequests.remove(target);
                                 }
                             } else {
-                                target.sendMessage(Text.literal("No teleportation requests pending."), false);
+                                LangManager.send(target, "TPA-Request-None");
                             }
 
                             return 1;
@@ -238,8 +250,7 @@ public class TPACommands {
                             if (requests.get(i).requester.equals(requester)) {
                                 requests.remove(i);
                                 requestCancelled = true;
-                                requester.sendMessage(Text.literal("You've cancelled your teleportation request to " + entry.getKey().getName().getString() + "."), false);
-
+                                LangManager.send(requester, "TPA-Cancel", Map.of("{target}", entry.getKey().getName().getString()));
                                 if (requests.isEmpty()) {
                                     teleportRequests.remove(entry.getKey());
                                 }
@@ -253,9 +264,8 @@ public class TPACommands {
                     }
 
                     if (!requestCancelled) {
-                        requester.sendMessage(Text.literal("You don't have any pending teleportation requests."), false);
+                        LangManager.send(requester, "TPA-No-Requests");
                     }
-
                     return 1;
                 }));
 
@@ -269,10 +279,10 @@ public class TPACommands {
 
                     if (teleportToggleOff.contains(playerId)) {
                         teleportToggleOff.remove(playerId);
-                        player.sendMessage(Text.literal("Incoming teleport requests enabled."), false);
+                        LangManager.send(player, "TP-Toggle-On");
                     } else {
                         teleportToggleOff.add(playerId);
-                        player.sendMessage(Text.literal("Incoming teleport requests disabled."), false);
+                        LangManager.send(player, "TP-Toggle-Off");
                     }
 
                     return 1;
@@ -313,8 +323,12 @@ public class TPACommands {
 
                 // If request has expired
                 if ((currentTimestamp - request.timestamp) > TIMEOUT_DURATION) {
-                    request.requester.sendMessage(Text.literal("Your teleport request to " + target.getName().getString() + " has expired."), false);
-                    target.sendMessage(Text.literal(request.requester.getName().getString() + "'s teleport request has expired."), false);
+                    Map<String, String> replacements = new HashMap<>();
+                    replacements.put("{receiver}", target.getName().getString());
+                    replacements.put("{requester}", request.requester.getName().getString());
+
+                    LangManager.send(request.requester, "TPA-Requester-Timeout", replacements);
+                    LangManager.send(target, "TPA-Receiver-Timeout", replacements);
                     iterator.remove();
                 }
             }

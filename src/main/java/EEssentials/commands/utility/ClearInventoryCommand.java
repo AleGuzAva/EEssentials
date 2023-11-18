@@ -1,5 +1,6 @@
 package EEssentials.commands.utility;
 
+import EEssentials.lang.LangManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -9,6 +10,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.Map;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -83,9 +86,9 @@ public class ClearInventoryCommand {
         }
 
         if (player.equals(source.getPlayer())) {
-            player.sendMessage(Text.of("Cleared your inventory."), false);
+            LangManager.send(player, "ClearInventory-Self");
         } else {
-            source.sendMessage(Text.of("Cleared " + player.getName().getString() + "'s inventory."));
+            LangManager.send(source, "ClearInventory-Other", Map.of("{player}", player.getName().getString()));
         }
         return 1;
     }

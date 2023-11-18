@@ -1,5 +1,6 @@
 package EEssentials.commands.teleportation;
 
+import EEssentials.lang.LangManager;
 import com.mojang.brigadier.CommandDispatcher;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.command.ServerCommandSource;
@@ -8,6 +9,8 @@ import net.minecraft.text.Text;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.CommandManager;
 import EEssentials.util.Location;
+
+import java.util.Map;
 
 public class TPHereCommand {
 
@@ -24,7 +27,7 @@ public class TPHereCommand {
 
                             // Check for self-teleport attempts.
                             if (sender.equals(target)) {
-                                sender.sendMessage(Text.of("You cannot teleport yourself to yourself!"), false);
+                                LangManager.send(sender, "TPHere-Self-Teleport");
                                 return 0;
                             }
 
@@ -33,10 +36,10 @@ public class TPHereCommand {
                             senderLocation.teleport(target);
 
                             // Send a confirmation message to the sender.
-                            sender.sendMessage(Text.of("Teleported " + target.getEntityName() + " to your location."), false);
-                            target.sendMessage(Text.of(sender.getEntityName() + "has teleported you to their location."), false);
+                            LangManager.send(sender, "TPHere-Success-Sender", Map.of("{target}", target.getEntityName()));
+                            LangManager.send(target, "TPHere-Success-Target", Map.of("{sender}", sender.getEntityName()));
 
-                            return 1; // Command executed successfully.
+                            return 1;
                         })
                 )
         );

@@ -1,5 +1,6 @@
 package EEssentials.commands.utility;
 
+import EEssentials.lang.LangManager;
 import EEssentials.screens.EnderchestScreen;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -76,7 +77,7 @@ public class EnderchestCommand {
         executingPlayer.incrementStat(Stats.OPEN_ENDERCHEST);
 
         if (!executingPlayer.equals(targetPlayer)) {
-            source.sendMessage(Text.of("Opening " + targetPlayer.getName().getString() + "'s enderchest."));
+            LangManager.send(source, "Enderchest-Other");
         }
 
         return 1;

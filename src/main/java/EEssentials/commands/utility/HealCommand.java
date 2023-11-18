@@ -1,5 +1,6 @@
 package EEssentials.commands.utility;
 
+import EEssentials.lang.LangManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -9,6 +10,8 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.Map;
 
 /**
  * Provides command to heal the player.
@@ -56,13 +59,14 @@ public class HealCommand {
         player.setHealth(player.getMaxHealth());
 
         if (player.equals(source.getPlayer())) {
-            player.sendMessage(Text.of("You have been healed."), false);
+            LangManager.send(player, "Heal-Self");  // Player healing themselves
         } else {
-            player.sendMessage(Text.of("You've been healed by " + source.getName()), false);
-            source.sendMessage(Text.of("Healed " + player.getName().getString() + "."));
+            LangManager.send(player, "Heal-Other-Notify", Map.of("{source}", source.getName()));  // Player being healed by someone else
+            LangManager.send(source, "Heal-Other", Map.of("{player}", player.getName().getString()));  // The healer receives this message
         }
 
         return 1;
     }
+
 
 }

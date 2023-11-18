@@ -1,5 +1,6 @@
 package EEssentials.commands.other;
 
+import EEssentials.lang.LangManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -9,7 +10,9 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.stat.Stats;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,7 +33,7 @@ public class PlaytimeCommand {
         dispatcher.register(
                 literal("playtime")
                         .requires(Permissions.require(PLAYTIME_SELF_PERMISSION_NODE, 2))
-                        .executes(ctx -> showPlaytime(ctx))  // Shows the executing player's playtime
+                        .executes(PlaytimeCommand::showPlaytime)  // Shows the executing player's playtime
                         .then(argument("target", EntityArgumentType.player())
                                 .requires(Permissions.require(PLAYTIME_OTHER_PERMISSION_NODE, 2))
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
@@ -57,10 +60,14 @@ public class PlaytimeCommand {
         int timePlayed = player.getStatHandler().getStat(Stats.CUSTOM.getOrCreateStat(Stats.PLAY_TIME));
         String timeString = formatTime(timePlayed);
 
+        Map<String, String> replacements = new HashMap<>();
+        replacements.put("{playtime}", timeString);
+
         if (player.equals(source.getPlayer())) {
-            player.sendMessage(Text.of("You've played for: " + timeString), false);
+            LangManager.send(player, "Playtime", replacements);
         } else {
-            source.sendMessage(Text.of(player.getName().getString() + " has played for: " + timeString));
+            replacements.put("player", player.getName().getString());
+            LangManager.send(source, "Playtime-Other", replacements);
         }
 
         return 1;

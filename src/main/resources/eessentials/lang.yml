@@ -1,6 +1,5 @@
 # We Support Legacy and MiniMessage Formatting!
-Prefix: "<gold>[EEssentials]<r> "
-Prefix-Social-Spy: "<white>[<gold>SS<white>] "
+Prefix: "<gold>[EEssentials]<reset> "
 
 # Errors
 Invalid-Player: "<red>Error: <dark_red>{input} <red>not found."
@@ -11,28 +10,62 @@ Invalid-Player-Only: "<red>This command can only be used by a player!"
 # Private Messages/Whispers
 Message-Receive: "<gold>[<red>{player} <gold>-> <red>me<gold>] <white>{message}"
 Message-Send: "<gold>[<red>me <gold>-> <red>{player}<gold>] <white>{message}"
+SocialSpy-Enabled: "<gold>SocialSpy enabled!"
+SocialSpy-Disabled: "<gold>SocialSpy disabled!"
+Prefix-Social-Spy: "<white>[<gold>SS<white>] "
 
 # Ignore
 Ignore: "<gold>You ignored player <red>{player} <gold>from now on."
 Unignore: "<gold>You are not ignoring player <red>{player} <gold>anymore."
+Ignore-Unignorable: "<red>{player} <gold>cannot be ignored."
+Ignore-List-Empty: "<gold>You haven't ignored any players."
+Ignore-List: "<gold>Ignored players: <white>{players}"
 
 # Teleportation
 Teleporting-To-Location: "<gold>Teleporting to <red>{location}<gold>."
 Teleporting-Players: "<gold>Teleporting..."
 Teleport-Back: "<gold>Returning to previous location."
 Teleport-Back-None: "<gold>No last location found."
-TPA-Request-Send: "<gold>Request sent to <red>{player}<gold>.\nTo cancel this request, type <red>/tpacancel<gold>."
-TPA-Request-Receive: "<red>{player} <gold>has requested to teleport to you.\nTo teleport, type <red>/tpaccept<gold>.\nTo deny this request, type <red>/tpdeny<gold>."
-TPA-Request-Timeout: "<red>{player}'s <gold>teleport request has timed out."
+TP-Toggle-On: "<gold>Incoming teleport requests enabled."
+TP-Toggle-Off: "<gold>Incoming teleport requests disabled."
+TPHere-Success-Sender: "<gold>Teleported <red>{target} <gold>to your location."
+TPHere-Success-Target: "<gold>{sender} <gold>has teleported you to their location."
+TPHere-Self-Teleport: "<red>You cannot teleport yourself to yourself!"
+TPOffline-Online-Notify: "<red>{player} <gold>is currently online."
+TPOffline-No-Data: "<red>No data found for <dark_red>{player}<red>."
+TPOffline-No-Logout-Location: "<red>{player} <gold>does not have a saved logout location."
+TPOffline-Success: "<gold>Teleported to <red>{player}'s<gold> last logout location."
+
+# TPA
+TPA-Request-Send: "<gold>Request sent to <red>{target}<gold>.\nTo cancel this request, type <red>/tpacancel<gold>."
+TPA-Request-Receive: "<red>{requester} <gold>has requested to teleport to you.\nTo teleport, type <red>/tpaccept<gold>.\nTo deny this request, type <red>/tpdeny<gold>."
+TPAHere-Request-Send: "<gold>You have sent a request for <red>{target} <gold>to teleport to you."
+TPAHere-Request-Receive: "<red>{requester} <gold>wants you to teleport to them. Use /tpaccept to allow."
+TPA-Receiver-Timeout: "<red>{requester}'s <gold>teleport request has timed out."
+TPA-Requester-Timeout: "<red>Your teleport request to <gold>{target} <red>has timed out."
 TPA-Accept: "<gold>Teleport request accepted."
 TPA-Deny: "<gold>Teleport request denied."
 
-# Homes and Warps
+# Spawn
+Spawn-Set: "<gold>Spawn set to current location."
+Teleporting-To-Spawn: "<gold>Teleporting to spawn."
+Teleporting-Player-To-Spawn: "<gold>Teleported <red>{player} <gold>to spawn."
+Spawn-Not-Set: "<red>Spawn Location not set."
+
+# Homes
 Home-List: "<gold>Homes: <white>{homes}"
-Warp-List: "<gold>Warps: <white>{warps}"
 Home-Set: "<gold>Home <red>{home} <gold>set to current location."
 Home-Delete: "<gold>Home <red>{home} <gold>has been removed."
 Invalid-Home: "<red>Error: <darkred>Home <red>{input} <darkred>doesn't exist!"
+Home-Max-Limit-Message: "<red>You have reached the maximum number of homes (<dark_red>{maxhomes}<red>)."
+Home-List-Empty: "<gold>You have no homes set."
+Teleporting-To-Home: "<gold>Teleporting to home <red>{home}<gold>."
+Teleporting-To-Other-Home: "<gold>Teleported to <red>{target}'s<gold> home named <red>{home}<gold>."
+
+# Warps
+Warp-List: "<gold>Warps: <white>{warps}"
+Warp-Set: "<gold>Warp <red>{warp} <gold>set to current location."
+Warp-Delete: "<gold>Warp <red>{warp} <gold>has been removed."
 
 # AFK
 Self-Now-AFK: "<gray>You are now AFK."
@@ -43,15 +76,40 @@ AFK-Kick-Message: "<red>You have been kicked for being AFK too long."
 Player-Got-AFK-Kicked-Message: "<red>{player} <gold>has been kicked for being AFK too long."
 
 # Misc
-Seen: "<gold>Player <red>{player} <gold>was last seen {last-seen-time}."
-CheckTime: "<red>{world-time}"
-Playtime: "<gold>Playtime: <red>{playtime}"
-ClearInventory: "<gold>Cleared all inventory items from <red>{player}"
-Disposal: "Opening disposal menu..."
-Feed: "<gold>You have been fed."
-Heal: "<gold>You have been healed."
+ClearInventory-Self: "<gold>Your inventory has been cleared."
+ClearInventory-Other: "<gold>Cleared all inventory items from <red>{player}"
+Disposal: "<gold>Opening disposal menu..."
+Enderchest-Other: "<gold>Opening <red>{player}<gold>'s enderchest."
+Feed-Self: "<gold>You have been fed."
+Feed-Other: "<gold>Fed <red>{player}."
+Feed-Other-Notify: "<gold>You have been fed by <red>{source}."
+Heal-Self: "<gold>You have been healed."
+Heal-Other: "<gold>Healed <red>{player}."
+Heal-Other-Notify: "<gold>You have been healed by <red>{source}."
 Speed: "<gold>Set <red>{speed-option} <gold>speed to <red>{speed-multiplier} <gold>for <red>{player}."
-Gamemode: "<gold>Set game mode <red>{gamemode} <gold>for <red>{player}."
+GameMode-Change-Self: "<gold>Your game mode has been set to <red>{gameMode}<gold> Mode."
+GameMode-Change-Other: "<gold>Set <red>{player}'s<gold> game mode to <red>{gameMode}<gold> Mode."
+GameMode-Change-Other-Notify: "<gold>Your game mode has been set to <red>{gameMode}<gold> Mode by <red>{source}."
+
+# Flight
+Flight-Enabled-Self: "<gold>Flight ability enabled."
+Flight-Disabled-Self: "<gold>Flight ability disabled."
+Flight-Enabled-Other: "<gold>Flight ability enabled by <red>{source}<gold>."
+Flight-Disabled-Other: "<gold>Flight ability disabled by <red>{source}<gold>."
+Flight-Enabled-Other-Notify: "<gold>Enabled flight ability for <red>{player}<gold>."
+Flight-Disabled-Other-Notify: "<gold>Disabled flight ability for <red>{player}<gold>."
+
+# Speed
+Speed-Set-Self: "<gold>Set <red>{speed-option} <gold>speed to <red>{speed-multiplier}<gold>x."
+Speed-Set-Other: "<gold>Set <red>{player}'s <red>{speed-option} <gold>speed to <red>{speed-multiplier}<gold>x."
+Speed-Set-Other-Notify: "<gold>Your <red>{speed-option} <gold>speed has been set to <red>{speed-multiplier}<gold>x by <red>{source}<gold>."
+
+# Time
+Seen: "<gold>Player <red>{player} <gold>was last seen {last-seen-time} ago."
+Seen-Online: "<gold>Player <red>{player} <gold>is currently online."
+CheckTime: "<gold>Current World Time: <red>{world-time}"
+Playtime: "<gold>Your playtime: <red>{playtime}"
+Playtime-Other: "<gold>{player}'s playtime: <red>{playtime}"
 
 # Ascend
 Ascend-Location-Not-Found: "<red>No place to ascend to!"

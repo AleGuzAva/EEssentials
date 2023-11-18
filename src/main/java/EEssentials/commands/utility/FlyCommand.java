@@ -1,5 +1,6 @@
 package EEssentials.commands.utility;
 
+import EEssentials.lang.LangManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -9,6 +10,8 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.Map;
 
 /**
  * Provides command to toggle flight mode for players.
@@ -65,10 +68,13 @@ public class FlyCommand {
         player.sendAbilitiesUpdate();
 
         if (player.equals(source.getPlayer())) {
-            player.sendMessage(Text.of(newFlightAbilityStatus ? "Flight ability enabled." : "Flight ability disabled."), false);
+            String key = newFlightAbilityStatus ? "Flight-Enabled-Self" : "Flight-Disabled-Self";
+            LangManager.send(player, key);
         } else {
-            player.sendMessage(Text.of(newFlightAbilityStatus ? "Flight ability enabled by " + source.getName() : "Flight ability disabled by " + source.getName()), false);
-            source.sendMessage(Text.of(newFlightAbilityStatus ? "Enabled flight ability for " + player.getName().getString() + "." : "Disabled flight ability for " + player.getName().getString() + "."));
+            String key = newFlightAbilityStatus ? "Flight-Enabled-Other-Notify" : "Flight-Disabled-Other-Notify";
+            LangManager.send(player, key, Map.of("{player}", player.getName().getString()));
+            String notifyKey = newFlightAbilityStatus ? "Flight-Enabled-Other" : "Flight-Disabled-Other";
+            LangManager.send(source, notifyKey, Map.of("{source}", source.getName()));
         }
 
         return 1;

@@ -1,5 +1,6 @@
 package EEssentials.commands.other;
 
+import EEssentials.lang.LangManager;
 import EEssentials.storage.PlayerStorage;
 import EEssentials.storage.StorageManager;
 import com.mojang.authlib.GameProfile;
@@ -11,11 +12,11 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
 import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -60,13 +61,13 @@ public class SeenCommand {
         UUID playerUUID;
         if (target != null) {
             // Player is online
-            source.sendMessage(Text.of(target.getName().getString() + " is currently online."));
+            LangManager.send(source, "Seen-Online", Map.of("{player}", target.getName().getString()));
             return 1;
         } else {
             // Use GameProfile to resolve UUID
             GameProfile profile = getProfileForName(targetName);
             if (profile == null || profile.getId() == null) {
-                source.sendMessage(Text.of("Error retrieving UUID for " + targetName));
+                LangManager.send(source, "Invalid-Player", Map.of("{input}", targetName));
                 return 0;
             }
             playerUUID = profile.getId();
@@ -74,13 +75,13 @@ public class SeenCommand {
 
         PlayerStorage storage = PlayerStorage.fromPlayerUUID(playerUUID);
         if (storage == null) {
-            source.sendMessage(Text.of("No data found for " + targetName));
+            LangManager.send(source, "Invalid-Player", Map.of("{input}", targetName));
             return 0;
         }
         Instant lastOnline = storage.getLastTimeOnline();
         Duration duration = Duration.between(lastOnline, Instant.now());
         String timeString = formatDuration(duration);
-        source.sendMessage(Text.of(targetName + " was last online " + timeString + " ago."));
+        LangManager.send(source, "Seen", Map.of("{player}", targetName, "{last-seen-time}", timeString));
 
         return 1;
     }
@@ -95,8 +96,6 @@ public class SeenCommand {
                     if (storage != null && name.equals(storage.getPlayerName())) {
                         return new GameProfile(storage.getPlayerUUID(), name);
                     }
-                } else {
-                    //System.out.println("Skipped file: " + file.getName()); // Log files being skipped
                 }
             }
         }

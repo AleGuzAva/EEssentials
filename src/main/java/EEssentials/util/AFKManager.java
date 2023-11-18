@@ -1,5 +1,6 @@
 package EEssentials.util;
 
+import EEssentials.lang.LangManager;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
@@ -11,6 +12,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class AFKManager {
@@ -53,15 +55,17 @@ public class AFKManager {
             Vec3i currentBlockPos = new Vec3i(player.getBlockX(), player.getBlockY(), player.getBlockZ());
             Vec3i lastBlockPos = lastKnownPositions.getOrDefault(player.getUuid(), currentBlockPos);
 
-            // If the player has been AFK beyond the kick threshold, kick them.
             if (currentTime - lastActiveTime >= KICK_AFK_THRESHOLD && isAFK(player)) {
                 // Notify all players that the player was kicked for being AFK.
-                Text kickMessage = Text.of(player.getName().getString() + " was kicked for being AFK.");
-                player.getServer().getPlayerManager().getPlayerList().forEach(onlinePlayer -> onlinePlayer.sendMessage(kickMessage));
+                Map<String, String> kickReplacements = Map.of("{player}", player.getName().getString());
+                player.getServer().getPlayerManager().getPlayerList().forEach(onlinePlayer ->
+                        LangManager.send(onlinePlayer, "Player-Got-AFK-Kicked-Message", kickReplacements)
+                );
                 setAFK(player, false, false);
-                player.networkHandler.disconnect(Text.of("You have been kicked for being AFK too long."));
-                continue;
+                LangManager.send(player, "AFK-Kick-Message");  // Send kick message to the player being kicked
+                player.networkHandler.disconnect(Text.literal("You have been kicked for being AFK too long."));
             }
+
 
             // If player moved, reset AFK status and activity timer.
             if (!currentBlockPos.equals(lastBlockPos)) {
@@ -162,14 +166,14 @@ public class AFKManager {
      * @param afk The new AFK status.
      */
     private static void notifyAFKStatusChange(ServerPlayerEntity player, boolean afk) {
-        Text message;
-        if (afk) {
-            message = Text.of(player.getName().getString() + " is now AFK.");
-        } else {
-            message = Text.of(player.getName().getString() + " is no longer AFK.");
-        }
-        player.getServer().getPlayerManager().getPlayerList().forEach(onlinePlayer -> onlinePlayer.sendMessage(message));
+        String messageKey = afk ? "Other-Player-Now-AFK" : "Other-Player-No-Longer-AFK";
+        Map<String, String> replacements = Map.of("{player}", player.getName().getString());
+
+        player.getServer().getPlayerManager().getPlayerList().forEach(onlinePlayer ->
+                LangManager.send(onlinePlayer, messageKey, replacements)
+        );
     }
+
 }
 
 
