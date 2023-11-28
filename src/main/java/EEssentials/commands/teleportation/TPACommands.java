@@ -169,14 +169,14 @@ public class TPACommands {
                                     Location targetLocation = new Location(target.getServerWorld(), target.getX(), target.getY(), target.getZ());
                                     targetLocation.teleport(requester);
 
-                                    LangManager.send(requester, "TPA-Accept", replacements);
-                                    LangManager.send(target, "Teleporting-Players");
+                                    LangManager.send(requester, "Teleporting-Players");
+                                    LangManager.send(target, "TPA-Accept", replacements);
                                 } else {  // TeleportRequest.RequestType.TPAHERE
                                     Location requesterLocation = new Location(requester.getServerWorld(), requester.getX(), requester.getY(), requester.getZ());
                                     requesterLocation.teleport(target);
 
                                     LangManager.send(target, "Teleporting-Players");
-                                    LangManager.send(target, "TPA-Accept", replacements);
+                                    LangManager.send(requester, "TPA-Accept", replacements);
                                 }
 
                                 // If there are no more requests pending for the target, remove them from the map

@@ -1,16 +1,22 @@
 package EEssentials.commands.utility;
 
+import EEssentials.commands.AliasedCommand;
 import EEssentials.lang.LangManager;
 import EEssentials.screens.EnderchestScreen;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -30,34 +36,27 @@ public class EnderchestCommand {
      * @param dispatcher The command dispatcher to register commands on.
      */
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(
-                literal("enderchest")
+        // Register /enderchest, /echest, and /ec
+        new AliasedCommand() {
+            @Override
+            public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
+                return dispatcher.register(CommandManager.literal("enderchest")
                         .requires(Permissions.require(ENDERCHEST_SELF_PERMISSION_NODE, 2))
-                        .executes(ctx -> openEnderchest(ctx))  // Opens the enderchest for the executing player
-                        .then(argument("target", EntityArgumentType.player())
-                                .requires(Permissions.require(ENDERCHEST_OTHER_PERMISSION_NODE, 2))
-                                .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
-                                .executes(ctx -> {
-                                    ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
-                                    return openEnderchest(ctx, target);  // Opens the enderchest for the specified player
-                                }))
-        );
-
-        // /echest is an alias for enderchest
-        dispatcher.register(
-                literal("echest")
-                        .requires(Permissions.require(ENDERCHEST_SELF_PERMISSION_NODE, 2))
-                        .executes(ctx -> openEnderchest(ctx))  // Opens the enderchest for the executing player
-                        .then(argument("target", EntityArgumentType.player())
-                                .requires(Permissions.require(ENDERCHEST_OTHER_PERMISSION_NODE, 2))
-                                .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
-                                .executes(ctx -> {
-                                    ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
-                                    return openEnderchest(ctx, target);  // Opens the enderchest for the specified player
-                                }))
-        );
+                        .executes(ctx -> openEnderchest(ctx))
+                                .then(argument("target", EntityArgumentType.player())
+                                        .requires(Permissions.require(ENDERCHEST_OTHER_PERMISSION_NODE, 2))
+                                        .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
+                                        .executes(ctx -> {
+                                            ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
+                                            return openEnderchest(ctx, target);
+                                        })));
+            }
+            @Override
+            public String[] getCommandAliases() {
+                return new String[]{"echest", "ec"};
+            }
+        }.registerWithAliases(dispatcher);
     }
-
     /**
      * Opens the target player's enderchest.
      *
@@ -77,7 +76,10 @@ public class EnderchestCommand {
         executingPlayer.incrementStat(Stats.OPEN_ENDERCHEST);
 
         if (!executingPlayer.equals(targetPlayer)) {
-            LangManager.send(source, "Enderchest-Other");
+            // Replace text messages with LangManager.send
+            Map<String, String> replacements = new HashMap<>();
+            replacements.put("{player}", targetPlayer.getName().getString());
+            LangManager.send(source, "Enderchest-Other",replacements);
         }
 
         return 1;

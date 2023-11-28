@@ -1,3 +1,35 @@
+
+
+# Disable/Enable Command Modules:
+# Useful if you don't want a certain command on your server or if another mod handles a certain command
+Commands:
+  ascend: true
+  back: true
+  clearinventory: true
+  hat: true
+  home: true # Contains /home, /homes, /sethome, /delhome, /home:
+  descend: true
+  disposal: true
+  enderchest: true
+  feed: true
+  fly: true
+  gm: true  # Contains /gma, /gmc, /gms, /gmsp
+  heal: true
+  ignore: true
+  message: true # Contains /msg, /reply, /socialspy
+  playtime: true
+  rtp: true
+  seen: true
+  smite: true
+  spawn: true # Contains /spawn, /setspawn
+  speed: true
+  textcommands: true
+  time: true
+  tp: true # contains /tphere, /tpoffline
+  tpa: true # Contains /tpa, /tpahere, /tpaccept, /tpdeny, /tpacancel
+  top: true
+  warp: true # Contains /warp, /warps, /setwarp, /delwarp
+  workbench: true
 Random-Teleport:
   Max-Attempts: 10
   # How many attempts the plugin will take to find a safe location for a player to teleport to before giving up.
@@ -52,3 +84,8 @@ Hat:
     # This stops all barriers from being placed on the player's head.
     - "minecraft:diamond_sword:1"
     # This stops diamond swords with a CustomModelData of 1 from being put on the player's head.
+
+# Migrate data from other mods into EEssentials
+# By default, this will be off. Set to True to enable importing
+Importers:
+  EssentialCommands: false

@@ -12,7 +12,6 @@ import com.google.gson.JsonParseException;
 import net.minecraft.server.world.ServerWorld;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.*;
 
