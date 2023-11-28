@@ -1,7 +1,7 @@
 package EEssentials.storage;
 
 import EEssentials.EEssentials;
-import EEssentials.util.importers.EssentialCommandsImporter;
+//import EEssentials.util.importers.EssentialCommandsImporter;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.nio.file.Path;
@@ -42,7 +42,7 @@ public class StorageManager {
         PlayerStorage pStorage = playerStores.getOrDefault(player.getUuid(), PlayerStorage.fromPlayer(player));
         if (!pStorage.modImports.contains("essential_commands")) {
             EEssentials.LOGGER.info("Importing data from EssentialCommands for player: " + player.getGameProfile().getName());
-            EssentialCommandsImporter.loadEssentialCommandsPlayerData(pStorage);
+            //EssentialCommandsImporter.loadEssentialCommandsPlayerData(pStorage);
             pStorage.modImports.add("essential_commands");
             pStorage.save();
         }

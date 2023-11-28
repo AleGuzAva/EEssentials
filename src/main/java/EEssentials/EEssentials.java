@@ -10,8 +10,9 @@ import EEssentials.settings.HatSettings;
 import EEssentials.settings.randomteleport.RTPSettings;
 import EEssentials.storage.PlayerStorage;
 import EEssentials.storage.StorageManager;
-import EEssentials.util.*;
 import EEssentials.util.Location;
+import EEssentials.util.AsynchronousUtil;
+import EEssentials.util.TeleportUtil;
 import EEssentials.util.AFKManager;
 import EEssentials.util.PermissionHelper;
 import EEssentials.util.importers.EssentialCommandsImporter;
@@ -62,6 +63,9 @@ public class EEssentials implements ModInitializer {
     private static int tickCounter = 0;
     private static int afkTickCounter = 0;
 
+    // Config
+    Configuration mainConfig = getConfig("config.yml");
+
     /**
      * Called during the mod initialization phase.
      * Handles registration of commands, event listeners, and other initial setup.
@@ -71,6 +75,9 @@ public class EEssentials implements ModInitializer {
         // Display an ASCII Art message in the log for branding.
         displayAsciiArt();
         LOGGER.info("EEssentials Loaded!");
+
+        // Initialize configuration
+        this.configManager();
 
         // Register all the commands available in the mod.
         registerCommands();
@@ -86,8 +93,6 @@ public class EEssentials implements ModInitializer {
 
         // Tells the asynchronous executor to shut down when the server does to not have hanging threads.
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> AsynchronousUtil.shutdown());
-
-        this.configManager();
     }
 
     /**
@@ -95,40 +100,103 @@ public class EEssentials implements ModInitializer {
      */
     private void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            SpeedCommand.register(dispatcher);
-            GamemodeAliasesCommands.register(dispatcher);
-            TPACommands.register(dispatcher);
-            TPHereCommand.register(dispatcher);
-            TPOfflineCommand.register(dispatcher);
-            HomeCommands.register(dispatcher);
-            WarpCommands.register(dispatcher);
-            SpawnCommands.register(dispatcher);
-            TopCommand.register(dispatcher);
-            ClearInventoryCommand.register(dispatcher);
-            FeedCommand.register(dispatcher);
-            HealCommand.register(dispatcher);
-            PlaytimeCommand.register(dispatcher);
-            EnderchestCommand.register(dispatcher);
-            DisposalCommand.register(dispatcher);
-            MessageCommands.register(dispatcher);
-            SocialSpyCommand.register(dispatcher);
-            FlyCommand.register(dispatcher);
-            WorkbenchCommand.register(dispatcher);
-            BackCommand.register(dispatcher);
-            SeenCommand.register(dispatcher);
-            CheckTimeCommand.register(dispatcher);
-            AFKCommand.register(dispatcher);
-            IgnoreCommands.register(dispatcher);
-            RTPCommand.register(dispatcher);
-            HatCommand.register(dispatcher);
-            AscendCommand.register(dispatcher);
-            DescendCommand.register(dispatcher);
-            SmiteCommand.register(dispatcher);
+
+            // Reload Command - Should not be allowed to be toggled
             ReloadCommand.register(dispatcher);
 
-            List<String> allTextCommands = getTextCommands();
-            for(String textCommand : allTextCommands) {
-                new TextCommand(textCommand, dispatcher);
+            AFKCommand.register(dispatcher);
+            // Check if each command or command group is enabled before registering
+            if (mainConfig.getBoolean("Commands.ascend", true)) {
+                AscendCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.back", true)) {
+                BackCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.time", true)) {
+                CheckTimeCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.clearinventory", true)) {
+                ClearInventoryCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.descend", true)) {
+                DescendCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.disposal", true)) {
+                DisposalCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.enderchest", true)) {
+                EnderchestCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.feed", true)) {
+                FeedCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.fly", true)) {
+                FlyCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.home", true)) {
+                HomeCommands.register(dispatcher); // includes /home, /homes, /sethome, /delhome
+            }
+            if (mainConfig.getBoolean("Commands.gm", true)) {
+                GamemodeAliasesCommands.register(dispatcher); // includes /gma, /gmc, /gms, /gmsp
+            }
+            if (mainConfig.getBoolean("Commands.message", true)) {
+                MessageCommands.register(dispatcher); // includes /msg, /reply
+                SocialSpyCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.playtime", true)) {
+                PlaytimeCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.rtp", true)) {
+                RTPCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.seen", true)) {
+                SeenCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.smite", true)) {
+                SmiteCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.playtime", true)) {
+                PlaytimeCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.rtp", true)) {
+                RTPCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.seen", true)) {
+                SeenCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.smite", true)) {
+                SmiteCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.spawn", true)) {
+                SpawnCommands.register(dispatcher); // includes /spawn, /setspawn
+            }
+            if (mainConfig.getBoolean("Commands.speed", true)) {
+                SpeedCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.time", true)) {
+                CheckTimeCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.top", true)) {
+                TopCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.tp", true)) {
+                TPHereCommand.register(dispatcher);
+                TPOfflineCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.tpa", true)) {
+                TPACommands.register(dispatcher); // includes /tpa, /tpahere, /tpaccept, /tpdeny, /tpacancel
+            }
+            if (mainConfig.getBoolean("Commands.warp", true)) {
+                WarpCommands.register(dispatcher); //  includes /warp, /warps, /setwarp, /delwarp
+            }
+            if (mainConfig.getBoolean("Commands.workbench", true)) {
+                WorkbenchCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.textCommands", true)) {
+                List<String> allTextCommands = getTextCommands();
+                for (String textCommand : allTextCommands) {
+                    new TextCommand(textCommand, dispatcher);
+                }
             }
         });
     }
@@ -140,14 +208,19 @@ public class EEssentials implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             setupPermissions();
             EEssentials.server = server;
-            if (storage.locationManager.modImports.contains("essential_commands")) {
-                return;
+
+            // Read the EssentialCommands import toggle from the configuration
+            boolean ECImportFlag = mainConfig.getBoolean("Importers.EssentialCommands", false);
+
+            if (ECImportFlag && !storage.locationManager.modImports.contains("essential_commands")) {
+                LOGGER.info("Importing World Data from Essential Commands...");
+                EssentialCommandsImporter.loadEssentialCommandsWorldData();
+                LOGGER.info("Imported World Data from Essential Commands.");
+                storage.locationManager.modImports.add("essential_commands");
+                storage.locationManager.save();
+            } else {
+                LOGGER.info("Importing from Essential Commands is disabled in the configuration.");
             }
-            LOGGER.info("Importing World Data from Essential Commands...");
-            EssentialCommandsImporter.loadEssentialCommandsWorldData();
-            LOGGER.info("Imported World Data from Essential Commands.");
-            storage.locationManager.modImports.add("essential_commands");
-            storage.locationManager.save();
         });
     }
 
@@ -239,7 +312,7 @@ public class EEssentials implements ModInitializer {
     }
 
     public void configManager() {
-        Configuration mainConfig = getConfig("config.yml");
+
 
         Configuration rtpConfig = mainConfig.getSection("Random-Teleport");
         RTPSettings.reload(rtpConfig);

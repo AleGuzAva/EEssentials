@@ -52,7 +52,7 @@ public class MessageCommands {
             @Override
             public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
                 return dispatcher.register(CommandManager.literal("message")
-                        .requires(src -> Permissions.check(src, MESSAGE_PERMISSION_NODE, 2))
+                        .requires(Permissions.require(MESSAGE_PERMISSION_NODE, 2))
                         .then(argument("target", EntityArgumentType.player())
                                 .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
                                 .then(argument("message", StringArgumentType.greedyString())
@@ -74,7 +74,7 @@ public class MessageCommands {
             @Override
             public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
                 return dispatcher.register(CommandManager.literal("reply")
-                        .requires(src -> Permissions.check(src, MESSAGE_PERMISSION_NODE, 2))
+                        .requires(Permissions.require(MESSAGE_PERMISSION_NODE, 2))
                         .then(CommandManager.argument("message", StringArgumentType.greedyString())
                                 .executes(ctx -> {
                                     String message = StringArgumentType.getString(ctx, "message");
@@ -153,16 +153,18 @@ public class MessageCommands {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
+        /*
         if (!lastMessageSenders.containsKey(player) || player == null) {
-            LangManager.send(player, "Invalid-Player-Only"); // Update this line with the correct lang key
+            LangManager.send(player, "Invalid-Player-Only");
             return 0;
         }
+         */
 
         ServerPlayerEntity target = lastMessageSenders.get(player);
 
         // Check if the target has ignored the sender
         if (IgnoreManager.hasIgnored(target, player)) {
-            LangManager.send(player, "Ignore", Map.of("player", target.getName().getString())); // Update this line with the correct lang key
+            LangManager.send(player, "Ignore", Map.of("player", target.getName().getString()));
             return 1;
         }
 

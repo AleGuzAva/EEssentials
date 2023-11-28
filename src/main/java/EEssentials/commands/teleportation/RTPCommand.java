@@ -40,14 +40,14 @@ public class RTPCommand {
             @Override
             public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
                 return dispatcher.register(literal("randomteleport")
-                        .requires(source -> Permissions.check(source, RTP_PERMISSION_NODE, 0))
+                        .requires(source -> Permissions.check(source, RTP_PERMISSION_NODE, 2))
                         .executes(context -> {
                             ServerPlayerEntity player = context.getSource().getPlayer();
                             if(player != null) {
                                 RTPWorldSettings worldSettings = RTPSettings.getWorldSettings(player.getServerWorld());
                                 if(worldSettings != null) {
                                     long playerCooldown = worldSettings.getPlayerCooldown(player);
-                                    if(playerCooldown <= 0 || Permissions.check(player, RTP_COOLDOWN_BYPASS_PERMISSION_NODE, 4)) {
+                                    if(playerCooldown <= 0 || Permissions.check(player, RTP_COOLDOWN_BYPASS_PERMISSION_NODE, 2)) {
                                         if(!queuedPlayerNames.contains(player.getName().getString())) {
                                             LangManager.send(context.getSource(), "RTP-Queued-Message");
                                             queuedPlayerNames.add(player.getName().getString());

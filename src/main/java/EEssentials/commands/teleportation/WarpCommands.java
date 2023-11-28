@@ -8,7 +8,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.Map;
@@ -120,7 +119,7 @@ public class WarpCommands {
         Location location = EEssentials.storage.locationManager.getWarp(warpName);
         if (location != null) {
             location.teleport(player);
-            LangManager.send(player, "Teleporting-To-Warp", Map.of("{warp}", warpName));
+            LangManager.send(player, "Teleporting-Players");
             return 1;
         } else {
             LangManager.send(player, "Invalid-Warp", Map.of("{input}", warpName));

@@ -1,5 +1,4 @@
 # We Support Legacy and MiniMessage Formatting!
-
 # Errors
 Invalid-Player: "<red>Error: <dark_red>{input} <red>not found."
 Invalid-No-Permission: "<dark_red>You do not have access to that command."
@@ -42,6 +41,7 @@ TPAHere-Request-Send: "<gold>You have sent a request for <red>{target} <gold>to 
 TPAHere-Request-Receive: "<red>{requester} <gold>wants you to teleport to them. Use /tpaccept to allow."
 TPA-Receiver-Timeout: "<red>{requester}'s <gold>teleport request has timed out."
 TPA-Requester-Timeout: "<red>Your teleport request to <gold>{target} <red>has timed out."
+TPA-Request-None: "<red>You do not have any active teleport requests."
 TPA-Accept: "<gold>Teleport request accepted."
 TPA-Deny: "<gold>Teleport request denied."
 
@@ -55,7 +55,7 @@ Spawn-Not-Set: "<red>Spawn Location not set."
 Home-List: "<gold>Homes: <white>{homes}"
 Home-Set: "<gold>Home <red>{home} <gold>set to current location."
 Home-Delete: "<gold>Home <red>{home} <gold>has been removed."
-Invalid-Home: "<red>Error: <darkred>Home <red>{input} <darkred>doesn't exist!"
+Invalid-Home: "<red>Error: <dark_red>Home <red>{input} <dark_red>doesn't exist!"
 Home-Max-Limit-Message: "<red>You have reached the maximum number of homes (<dark_red>{maxhomes}<red>)."
 Home-List-Empty: "<gold>You have no homes set."
 Teleporting-To-Home: "<gold>Teleporting to home <red>{home}<gold>."
@@ -65,6 +65,7 @@ Teleporting-To-Other-Home: "<gold>Teleported to <red>{target}'s<gold> home named
 Warp-List: "<gold>Warps: <white>{warps}"
 Warp-Set: "<gold>Warp <red>{warp} <gold>set to current location."
 Warp-Delete: "<gold>Warp <red>{warp} <gold>has been removed."
+Invalid-Warp: "<red>Error: <dark_red>Warp <red>{input} <dark_red>doesn't exist!"
 
 # AFK
 Self-Now-AFK: "<gray>You are now AFK."
