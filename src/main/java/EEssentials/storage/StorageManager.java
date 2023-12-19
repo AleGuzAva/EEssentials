@@ -30,6 +30,10 @@ public class StorageManager {
         }
     }
 
+    public void serverStarted() {
+        this.locationManager.load();
+    }
+
     public PlayerStorage getPlayerStorage(UUID uuid) {
         return playerStores.getOrDefault(uuid, new PlayerStorage(uuid));
     }

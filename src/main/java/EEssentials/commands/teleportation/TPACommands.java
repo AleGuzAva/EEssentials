@@ -79,12 +79,12 @@ public class TPACommands {
                             }
 
                             if (teleportToggleOff.contains(target.getUuid())) {
-                                LangManager.send(requester, "Teleport-Requests-Disabled", replacements);
+                                LangManager.send(requester, "TPA-Requests-Disabled", replacements);
                                 return 0;
                             }
 
                             if (requester.equals(target)) {
-                                LangManager.send(requester, "Teleport-Request-Self");
+                                LangManager.send(requester, "TPA-Request-Self");
                                 return 0;
                             }
 
@@ -264,7 +264,7 @@ public class TPACommands {
                     }
 
                     if (!requestCancelled) {
-                        LangManager.send(requester, "TPA-No-Requests");
+                        LangManager.send(requester, "TPA-Request-None");
                     }
                     return 1;
                 }));

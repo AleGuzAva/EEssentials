@@ -37,6 +37,7 @@ TPOffline-Success: "<gold>Teleported to <red>{player}'s<gold> last logout locati
 # TPA
 TPA-Request-Send: "<gold>Request sent to <red>{target}<gold>.\nTo cancel this request, type <red>/tpacancel<gold>."
 TPA-Request-Receive: "<red>{requester} <gold>has requested to teleport to you.\nTo teleport, type <red>/tpaccept<gold>.\nTo deny this request, type <red>/tpdeny<gold>."
+TPA-Request-Self: "<red>You can not send a teleport request to yourself."
 TPAHere-Request-Send: "<gold>You have sent a request for <red>{target} <gold>to teleport to you."
 TPAHere-Request-Receive: "<red>{requester} <gold>wants you to teleport to them. Use /tpaccept to allow."
 TPA-Receiver-Timeout: "<red>{requester}'s <gold>teleport request has timed out."
@@ -66,6 +67,8 @@ Warp-List: "<gold>Warps: <white>{warps}"
 Warp-Set: "<gold>Warp <red>{warp} <gold>set to current location."
 Warp-Delete: "<gold>Warp <red>{warp} <gold>has been removed."
 Invalid-Warp: "<red>Error: <dark_red>Warp <red>{input} <dark_red>doesn't exist!"
+Invalid-Warp-Command: "<red>You must specify a warp."
+Warp-List-Empty: "<red>There are no available warps."
 
 # AFK
 Self-Now-AFK: "<gray>You are now AFK."
