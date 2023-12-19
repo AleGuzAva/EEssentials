@@ -44,15 +44,19 @@ public class SpawnCommands {
         );
 
         // Teleport the player or the target to the universal spawn location.
-        dispatcher.register(literal("spawn")
-                .requires(Permissions.require(SPAWN_SELF_PERMISSION_NODE, 2))
-                .executes(SpawnCommands::teleportToSpawn) // Teleport the executing player
-                .then(argument("target", EntityArgumentType.player())
-                        .requires(Permissions.require(SPAWN_OTHER_PERMISSION_NODE, 2))
+        dispatcher.register(
+                literal("spawn")
+                        .requires(Permissions.require(SPAWN_SELF_PERMISSION_NODE, 2))
                         .executes(ctx -> {
-                            ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
-                            return teleportToSpawn(ctx, target);  // Teleport the specified player
-                        }))
+                            ServerPlayerEntity player = ctx.getSource().getPlayer();
+                            return teleportToSpawn(ctx, player);
+                        })
+                        .then(argument("target", EntityArgumentType.player())
+                                .requires(Permissions.require(SPAWN_OTHER_PERMISSION_NODE, 2))
+                                .executes(ctx -> {
+                                    ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
+                                    return teleportToSpawn(ctx, target);
+                                }))
         );
     }
 

@@ -153,14 +153,12 @@ public class MessageCommands {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        /*
-        if (!lastMessageSenders.containsKey(player) || player == null) {
-            LangManager.send(player, "Invalid-Player-Only");
+        ServerPlayerEntity target = lastMessageSenders.get(player);
+
+        if (target == null) {
+            LangManager.send(player, "No-Reply-Target"); // ToDo Add an appropriate message key here
             return 0;
         }
-         */
-
-        ServerPlayerEntity target = lastMessageSenders.get(player);
 
         // Check if the target has ignored the sender
         if (IgnoreManager.hasIgnored(target, player)) {
@@ -184,6 +182,4 @@ public class MessageCommands {
 
         return 1;
     }
-
-
 }

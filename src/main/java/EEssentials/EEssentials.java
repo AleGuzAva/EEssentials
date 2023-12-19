@@ -208,6 +208,7 @@ public class EEssentials implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             setupPermissions();
             EEssentials.server = server;
+            storage.serverStarted();
 
             // Read the EssentialCommands import toggle from the configuration
             boolean ECImportFlag = mainConfig.getBoolean("Importers.EssentialCommands", false);
