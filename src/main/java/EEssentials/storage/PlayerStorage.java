@@ -24,6 +24,7 @@ public class PlayerStorage {
     private String playerName;
     public final HashMap<String, Location> homes = new HashMap<>();
     public Boolean playedBefore = false;
+    public Boolean socialSpyFlag = false;
     private Location previousLocation = null;
     private Location logoutLocation = null;
     private Instant lastTimeOnline = Instant.now();
@@ -139,6 +140,8 @@ public class PlayerStorage {
         return this.lastTimeOnline;
     }
 
+    public Boolean getSocialSpyFlag(){ return this.socialSpyFlag; }
+
     /**
      * Save player data to storage.
      */
@@ -152,6 +155,7 @@ public class PlayerStorage {
             jsonObject.add("previousLocation", gson.toJsonTree(previousLocation));
             jsonObject.add("logoutLocation", gson.toJsonTree(logoutLocation));
             jsonObject.add("lastTimeOnline", gson.toJsonTree(lastTimeOnline.toString()));
+            jsonObject.addProperty("socialSpyFlag", socialSpyFlag);
             jsonObject.add("modImports", gson.toJsonTree(modImports));
             gson.toJson(jsonObject, writer);
         } catch (IOException e) {
@@ -205,6 +209,14 @@ public class PlayerStorage {
                 lastTimeOnline = Instant.parse(jsonObject.get("lastTimeOnline").getAsString());
             } else {
                 lastTimeOnline = Instant.now();
+                requiresSave = true;
+            }
+
+            // Load or initialize socialSpyFlag
+            if (jsonObject.has("socialSpyFlag")) {
+                socialSpyFlag = jsonObject.get("socialSpyFlag").getAsBoolean();
+            } else {
+                socialSpyFlag = false; // Default value if the flag isn't present
                 requiresSave = true;
             }
 
