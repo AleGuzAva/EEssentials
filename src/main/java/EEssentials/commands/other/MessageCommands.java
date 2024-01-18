@@ -2,22 +2,25 @@ package EEssentials.commands.other;
 
 import EEssentials.commands.AliasedCommand;
 import EEssentials.lang.LangManager;
+import EEssentials.util.ColorUtil;
 import EEssentials.util.IgnoreManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.kyori.adventure.text.Component;
 import net.minecraft.command.CommandSource;
-import static net.minecraft.server.command.CommandManager.*;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static net.minecraft.server.command.CommandManager.argument;
 
 /**
  * Provides command to send a private message.
@@ -96,20 +99,32 @@ public class MessageCommands {
      * @param ctx The command context.
      * @param message The message to be sent.
      */
-    private static void sendToSocialSpies(CommandContext<ServerCommandSource> ctx, Text message) {
-        // Retrieve the Social Spy prefix
-        String socialSpyPrefix = LangManager.getLang("Prefix-Social-Spy");
+    private static void sendToSocialSpies(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity sender, ServerPlayerEntity receiver, String message) {
+        Map<String, String> replacements = new HashMap<>();
+        replacements.put("{sender}", sender.getName().getString());
+        replacements.put("{receiver}", receiver.getName().getString());
+        replacements.put("{message}", message);
 
-        // Create a new Text object with the prefix and original message
-        Text prefixedMessage = Text.literal(socialSpyPrefix).append(message);
+        // Fetch and format the Social Spy message using LangManager
+        String socialSpyMessage = LangManager.getLang("Prefix-Social-Spy");
+        if (socialSpyMessage != null) {
+            // Replace placeholders in the Social Spy message
+            for (Map.Entry<String, String> entry : replacements.entrySet()) {
+                socialSpyMessage = socialSpyMessage.replace(entry.getKey(), entry.getValue());
+            }
 
-        for (ServerPlayerEntity spy : ctx.getSource().getServer().getPlayerManager().getPlayerList()) {
-            if (SocialSpyCommand.isSocialSpyEnabled(spy)) {
-                // Send the prefixed message to the spy
-                spy.sendMessage(prefixedMessage, false);
+            // Use ColorUtil to parse the formatted message into a Component
+            Component componentMessage = ColorUtil.parseColour(socialSpyMessage);
+
+            for (ServerPlayerEntity spy : ctx.getSource().getServer().getPlayerManager().getPlayerList()) {
+                if (SocialSpyCommand.isSocialSpyEnabled(spy)) {
+                    // Use Adventure's Audience to send the message
+                    spy.sendMessage(componentMessage);
+                }
             }
         }
     }
+
 
     /**
      * Sends a private message to the target player.
@@ -141,7 +156,7 @@ public class MessageCommands {
         LangManager.send(player, "Message-Send", replacements);
 
         // Social Spy
-        sendToSocialSpies(ctx, Text.of("[" + player.getName().getString() + " -> " + target.getName().getString() + "] " + message));
+        sendToSocialSpies(ctx, player, target, message);
 
         // Store this interaction so that the target can reply back
         storeLastSender(target, player);
@@ -155,11 +170,6 @@ public class MessageCommands {
 
         ServerPlayerEntity target = lastMessageSenders.get(player);
 
-        if (target == null) {
-            LangManager.send(player, "No-Reply-Target"); // ToDo Add an appropriate message key here
-            return 0;
-        }
-
         // Check if the target has ignored the sender
         if (IgnoreManager.hasIgnored(target, player)) {
             LangManager.send(player, "Ignore", Map.of("player", target.getName().getString()));
@@ -171,15 +181,25 @@ public class MessageCommands {
         replacements.put("{sender}", player.getName().getString());
         replacements.put("{message}", message);
 
+        // Check if the target player is still online
+        if (!isPlayerOnline(ctx.getSource().getServer(), target)) {
+            LangManager.send(player, "No-Reply-Target");
+            return 0;
+        }
+
         LangManager.send(player, "Message-Send", replacements);
         LangManager.send(target, "Message-Receive", replacements);
 
         // Social Spy
-        sendToSocialSpies(ctx, Text.of("[" + player.getName().getString() + " -> " + target.getName().getString() + "] " + message));
+        sendToSocialSpies(ctx, player, target, message);
 
         // Update the last sender for potential back-and-forth replies
         storeLastSender(target, player);
 
         return 1;
+    }
+
+    private static boolean isPlayerOnline(MinecraftServer server, ServerPlayerEntity player) {
+        return server.getPlayerManager().getPlayer(player.getUuid()) != null;
     }
 }

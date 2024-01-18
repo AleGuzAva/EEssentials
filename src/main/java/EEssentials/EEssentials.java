@@ -133,8 +133,20 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.fly", true)) {
                 FlyCommand.register(dispatcher);
             }
+            if (mainConfig.getBoolean("Commands.hat", true)) {
+                HatCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.heal", true)) {
+                HealCommand.register(dispatcher);
+            }
             if (mainConfig.getBoolean("Commands.home", true)) {
                 HomeCommands.register(dispatcher); // includes /home, /homes, /sethome, /delhome
+            }
+            if (mainConfig.getBoolean("Commands.ignore", true)) {
+                IgnoreCommands.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.invsee", true)) {
+                InvseeCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.gm", true)) {
                 GamemodeAliasesCommands.register(dispatcher); // includes /gma, /gmc, /gms, /gmsp
@@ -255,10 +267,14 @@ public class EEssentials implements ModInitializer {
         // Actions to perform when a player disconnects from the server.
         ServerPlayConnectionEvents.DISCONNECT.register((ServerPlayNetworkHandler handler, MinecraftServer server) -> {
             PlayerStorage storage = EEssentials.storage.getPlayerStorage(handler.player);
-            Location currentLogoutLocation = Location.fromPlayer(handler.player);
-            storage.setLogoutLocation(currentLogoutLocation);
-            storage.setLastTimeOnline();
-            storage.save();
+            if (storage != null) {
+                Location currentLogoutLocation = Location.fromPlayer(handler.player);
+                storage.setLogoutLocation(currentLogoutLocation);
+                storage.setLastTimeOnline();
+                storage.save();
+            } else {
+                EEssentials.LOGGER.warn("PlayerStorage not found on disconnect for player: " + handler.player.getName().getString());
+            }
             EEssentials.storage.playerLeft(handler.player);
 
             // Reset AFK status and activity timer for the disconnecting player.
@@ -268,13 +284,19 @@ public class EEssentials implements ModInitializer {
 
         // Actions to perform when a player joins the server.
         ServerPlayConnectionEvents.JOIN.register((ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) -> {
-            storage.playerJoined(handler.player);
-            PlayerStorage ps = storage.getPlayerStorage(handler.player);
-            if (!ps.playedBefore) {
-                Location spawn = storage.locationManager.serverSpawn;
-                if (spawn != null) {
-                    spawn.teleport(handler.player);
+            PlayerStorage storage = EEssentials.storage.getPlayerStorage(handler.player.getUuid());
+            if (storage != null) {
+                storage.setPlayerName(handler.player.getName().getString()); // Set the player's name
+                if (!storage.playedBefore) {
+                    storage.playedBefore = true; // Mark as having played before
+                    Location spawn = EEssentials.storage.locationManager.serverSpawn;
+                    if (spawn != null) {
+                        spawn.teleport(handler.player);
+                    }
                 }
+                storage.save(); // Save the updated storage
+            } else {
+                EEssentials.LOGGER.warn("PlayerStorage not found on join for player: " + handler.player.getName().getString());
             }
 
             // Reset AFK timers for the joining player.

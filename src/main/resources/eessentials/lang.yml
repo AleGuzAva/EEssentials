@@ -1,16 +1,18 @@
 # We Support Legacy and MiniMessage Formatting!
 # Errors
-Invalid-Player: "<red>Error: <dark_red>{input} <red>not found."
+Invalid-Player: "<red>Error: Player not found."
 Invalid-No-Permission: "<dark_red>You do not have access to that command."
 Invalid-Permission-All-Target: "<red>You don't have permission to target all players on this command!"
 Invalid-Player-Only: "<red>This command can only be used by a player!"
+Invalid-Self-Target: "<red>You cannot use this command on yourself."
 
 # Private Messages/Whispers
 Message-Receive: "<gold>[<red>{sender} <gold>-> <red>me<gold>] <white>{message}"
 Message-Send: "<gold>[<red>me <gold>-> <red>{receiver}<gold>] <white>{message}"
+No-Reply-Target: "<red>You do not have anyone to reply to."
 SocialSpy-Enabled: "<gold>SocialSpy enabled!"
 SocialSpy-Disabled: "<gold>SocialSpy disabled!"
-Prefix-Social-Spy: "<white>[<gold>SS<white>] "
+Prefix-Social-Spy: "<white>[<gold>SS<white>] <gold>[<red>{sender} <gold>-> <red>{receiver}<gold>] <white>{message}"
 
 # Ignore
 Ignore: "<gold>You ignored player <red>{player} <gold>from now on."
