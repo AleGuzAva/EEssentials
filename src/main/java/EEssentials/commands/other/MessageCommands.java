@@ -117,6 +117,11 @@ public class MessageCommands {
             Component componentMessage = ColorUtil.parseColour(socialSpyMessage);
 
             for (ServerPlayerEntity spy : ctx.getSource().getServer().getPlayerManager().getPlayerList()) {
+                // Skip sending the message to the sender/receiver
+                if (spy.equals(sender) || spy.equals(receiver)) {
+                    continue;
+                }
+
                 if (SocialSpyCommand.isSocialSpyEnabled(spy)) {
                     // Use Adventure's Audience to send the message
                     spy.sendMessage(componentMessage);
@@ -202,4 +207,5 @@ public class MessageCommands {
     private static boolean isPlayerOnline(MinecraftServer server, ServerPlayerEntity player) {
         return server.getPlayerManager().getPlayer(player.getUuid()) != null;
     }
+
 }

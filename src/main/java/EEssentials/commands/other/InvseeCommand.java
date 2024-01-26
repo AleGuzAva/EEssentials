@@ -1,4 +1,4 @@
-package EEssentials.commands.utility;
+package EEssentials.commands.other;
 
 import EEssentials.lang.LangManager;
 import EEssentials.screens.InventoryScreen;

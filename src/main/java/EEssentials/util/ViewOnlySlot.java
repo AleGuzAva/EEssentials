@@ -19,30 +19,4 @@ public class ViewOnlySlot extends Slot {
     public boolean canTakeItems(PlayerEntity playerEntity) {
         return false;
     }
-
-    @Override
-    public boolean canTakePartial(PlayerEntity player) {
-        return false;
-    }
-
-    @Override
-    public ItemStack takeStack(int amount) {
-        return ItemStack.EMPTY;
-    }
-
-    @Override
-    public ItemStack insertStack(ItemStack stack, int count) {
-        return stack;
-    }
-
-    @Override
-    public void setStack(ItemStack stack) {
-
-    }
-
-    @Override
-    public void setStackNoCallbacks(ItemStack stack) {
-
-    }
 }
-

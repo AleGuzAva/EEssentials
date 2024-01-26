@@ -1,6 +1,9 @@
+# DON'T TOUCH Config-Version OR THINGS WILL BREAK
+Config-Version: 1.0.1
 # Disable/Enable Command Modules:
 # Useful if you don't want a certain command on your server or if another mod handles a certain command
 Commands:
+  anvil: true
   ascend: true
   back: true
   clearinventory: true
@@ -12,15 +15,19 @@ Commands:
   feed: true
   fly: true
   gm: true  # Contains /gma, /gmc, /gms, /gmsp
+  grindstone: true
   heal: true
   ignore: true
   message: true # Contains /msg, /reply, /socialspy
   playtime: true
+  repair: true
   rtp: true
   seen: true
   smite: true
+  smithing: true
   spawn: true # Contains /spawn, /setspawn
   speed: true
+  stonecutter: true
   textcommands: true
   time: true
   tp: true # contains /tphere, /tpoffline
@@ -53,6 +60,8 @@ Random-Teleport:
     "minecraft:the_nether":
       Redirect-To: "minecraft:overworld"
       # Redirects this world's random teleports to the target world.
+    "minecraft:the_end":
+      Redirect-To: "minecraft:overworld"
   Blacklisted-Biomes:
     # This will never let the player RTP into these biomes.
     - "minecraft:cold_ocean"
@@ -76,13 +85,15 @@ Air-Blocks:
   - "minecraft:void_air"
   - "minecraft:cave_air"
 Hat:
-  Blacklisted-Items:
   # Items the player may not put on their head via /hat.
-    - "minecraft:barrier"
-    # This stops all barriers from being placed on the player's head.
-    - "minecraft:diamond_sword:1"
-    # This stops diamond swords with a CustomModelData of 1 from being put on the player's head.
-
+  Blacklisted-Items:
+    - "minecraft:barrier" # This stops all barriers from being placed on the player's head.
+    - "minecraft:diamond_sword:1" # This stops diamond swords with a CustomModelData of 1 from being put on the player's head.
+Repair:
+  # Items the player may not repair
+  Blacklisted-Items:
+    - "minecraft:wooden_axe"
+    - "minecraft:wooden_axe:1"
 # Migrate data from other mods into EEssentials
 # By default, this will be off. Set to True to enable importing
 Importers:

@@ -1,4 +1,4 @@
-package EEssentials.commands.utility;
+package EEssentials.commands.other;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;

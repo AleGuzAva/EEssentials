@@ -7,6 +7,7 @@ import EEssentials.config.Configuration;
 import EEssentials.config.YamlConfiguration;
 import EEssentials.lang.LangManager;
 import EEssentials.settings.HatSettings;
+import EEssentials.settings.RepairSettings;
 import EEssentials.settings.randomteleport.RTPSettings;
 import EEssentials.storage.PlayerStorage;
 import EEssentials.storage.StorageManager;
@@ -79,6 +80,10 @@ public class EEssentials implements ModInitializer {
         // Initialize configuration
         this.configManager();
 
+        // Update config if needed
+        //ConfigVersionUpdater updater = new ConfigVersionUpdater(mainConfig, "1.0.1"); //
+        //updater.updateConfig();
+
         // Register all the commands available in the mod.
         registerCommands();
 
@@ -106,6 +111,9 @@ public class EEssentials implements ModInitializer {
 
             AFKCommand.register(dispatcher);
             // Check if each command or command group is enabled before registering
+            if (mainConfig.getBoolean("Commands.anvil", true)) {
+                AnvilCommand.register(dispatcher);
+            }
             if (mainConfig.getBoolean("Commands.ascend", true)) {
                 AscendCommand.register(dispatcher);
             }
@@ -133,6 +141,9 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.fly", true)) {
                 FlyCommand.register(dispatcher);
             }
+            if (mainConfig.getBoolean("Commands.grindstone", true)) {
+                GrindstoneCommand.register(dispatcher);
+            }
             if (mainConfig.getBoolean("Commands.hat", true)) {
                 HatCommand.register(dispatcher);
             }
@@ -158,17 +169,8 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.playtime", true)) {
                 PlaytimeCommand.register(dispatcher);
             }
-            if (mainConfig.getBoolean("Commands.rtp", true)) {
-                RTPCommand.register(dispatcher);
-            }
-            if (mainConfig.getBoolean("Commands.seen", true)) {
-                SeenCommand.register(dispatcher);
-            }
-            if (mainConfig.getBoolean("Commands.smite", true)) {
-                SmiteCommand.register(dispatcher);
-            }
-            if (mainConfig.getBoolean("Commands.playtime", true)) {
-                PlaytimeCommand.register(dispatcher);
+            if (mainConfig.getBoolean("Commands.repair", true)) {
+                RepairCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.rtp", true)) {
                 RTPCommand.register(dispatcher);
@@ -178,12 +180,18 @@ public class EEssentials implements ModInitializer {
             }
             if (mainConfig.getBoolean("Commands.smite", true)) {
                 SmiteCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.smithing", true)) {
+                SmithingCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.spawn", true)) {
                 SpawnCommands.register(dispatcher); // includes /spawn, /setspawn
             }
             if (mainConfig.getBoolean("Commands.speed", true)) {
                 SpeedCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.stonecutter", true)) {
+                StonecutterCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.time", true)) {
                 CheckTimeCommand.register(dispatcher);
@@ -335,8 +343,6 @@ public class EEssentials implements ModInitializer {
     }
 
     public void configManager() {
-
-
         Configuration rtpConfig = mainConfig.getSection("Random-Teleport");
         RTPSettings.reload(rtpConfig);
 
@@ -344,6 +350,7 @@ public class EEssentials implements ModInitializer {
         TeleportUtil.setAirBlocks(mainConfig.getStringList("Air-Blocks"));
 
         HatSettings.reload(mainConfig.getSection("Hat"));
+        RepairSettings.reload(mainConfig.getSection("Repair"));
 
         Configuration langConfig = getConfig("lang.yml");
         LangManager.loadConfig(langConfig);
