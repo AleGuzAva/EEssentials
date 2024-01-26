@@ -1,3 +1,5 @@
+# DON'T TOUCH Config-Version OR THINGS WILL BREAK
+Config-Version: 1.0.1
 # We Support Legacy and MiniMessage Formatting!
 # Errors
 Invalid-Player: "<red>Error: Player not found."
@@ -136,6 +138,10 @@ Smite-All-Message: "<green>Successfully summoned lightning on {amount} player(s)
 Hat-Hand-Empty-Message: "<red>You have nothing in your hand!"
 Hat-Equipped-Message: "<green>Successfully put {item} on your head!"
 Hat-Blacklisted-Message: "<red>You can't put this item on your head!"
+
+# Repair
+Repair-Invalid: "<red>You can not repair this item!"
+Repair-Success: "<gold>You have repaired this item!"
 
 # RTP
 RTP-Cooldown-Message: "<red>You can't RTP in this world for another {cooldown} seconds!"
