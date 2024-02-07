@@ -6,6 +6,7 @@ import net.minecraft.server.world.ServerWorld;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class RTPSettings {
     private static final Map<String, RTPWorldSettings> worldSettings = new HashMap<>();
@@ -38,10 +39,18 @@ public abstract class RTPSettings {
     }
 
     public static RTPWorldSettings getWorldSettings(ServerWorld world) {
-        return worldSettings.get(world.getRegistryKey().getValue().toString());
+        return getWorldSettings(world.getRegistryKey().getValue().toString());
+    }
+
+    public static RTPWorldSettings getWorldSettings(String worldName) {
+        return worldSettings.get(worldName);
     }
 
     public static boolean isBiomeBlacklisted(String biomeKey) {
         return blacklistedBiomes.contains(biomeKey);
+    }
+
+    public static Set<String> getAllWorlds() {
+        return worldSettings.keySet();
     }
 }

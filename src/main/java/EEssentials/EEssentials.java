@@ -65,7 +65,7 @@ public class EEssentials implements ModInitializer {
     private static int afkTickCounter = 0;
 
     // Config
-    Configuration mainConfig = getConfig("config.yml");
+    private Configuration mainConfig;
 
     /**
      * Called during the mod initialization phase.
@@ -174,6 +174,9 @@ public class EEssentials implements ModInitializer {
             }
             if (mainConfig.getBoolean("Commands.rtp", true)) {
                 RTPCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.biomertp", true)) {
+                BiomeRTPCommand.register(dispatcher, registryAccess);
             }
             if (mainConfig.getBoolean("Commands.seen", true)) {
                 SeenCommand.register(dispatcher);
@@ -343,7 +346,31 @@ public class EEssentials implements ModInitializer {
     }
 
     public void configManager() {
-        Configuration rtpConfig = mainConfig.getSection("Random-Teleport");
+        mainConfig = getConfig("config.yml"); // Moved here because we need to actually be able to reload it
+
+        Configuration rtpConfig = getConfig("rtp.yml");
+        Configuration rtpSection = rtpConfig.getSection("Random-Teleport");
+
+        String mainConfigVer = mainConfig.getString("Config-Version");
+
+        if(mainConfigVer.equals("1.0.1")) { // If 1.0.1, move RTP config, fix previous mistake
+            rtpSection = mainConfig.getSection("Random-Teleport");
+            if(rtpSection.contains("Minimum-Distance")) {
+                rtpSection.set("Min-Distance", rtpSection.getInt("Minimum-Distance"));
+                rtpSection.set("Minimum-Distance", null);
+            }
+            if(rtpConfig.contains("Maximum-Distance")) {
+                rtpSection.set("Max-Distance", rtpSection.getInt("Maximum-Distance"));
+                rtpSection.set("Maximum-Distance", null);
+            }
+            rtpConfig.set("Random-Teleport", rtpSection);
+            saveConfig("rtp.yml", rtpConfig);
+            mainConfig.set("Config-Version", "1.0.2");
+            mainConfig.set("Commands.biomertp", true);
+            mainConfig.set("Random-Teleport", null);
+            saveConfig("config.yml", mainConfig);
+        }
+
         RTPSettings.reload(rtpConfig);
 
         TeleportUtil.setUnsafeBlocks(mainConfig.getStringList("Unsafe-Blocks"));
@@ -410,5 +437,21 @@ public class EEssentials implements ModInitializer {
             e.printStackTrace();
         }
         return config;
+    }
+
+    public void saveConfig(String fileName, Configuration config) {
+        try {
+            saveConfig(getOrCreateConfigurationFile(fileName), config);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveConfig(File file, Configuration config) {
+        try {
+            YamlConfiguration.save(config, file);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 }

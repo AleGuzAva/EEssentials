@@ -17,8 +17,8 @@ public final class RTPWorldSettings {
 
     public RTPWorldSettings(String worldName, Configuration worldConfig) {
         this.worldName = worldName;
-        this.minDistance = worldConfig.getInt("Minimum-Distance", 250);
-        this.maxDistance = worldConfig.getInt("Maximum-Distance", 5000);
+        this.minDistance = worldConfig.getInt("Min-Distance", 250);
+        this.maxDistance = worldConfig.getInt("Max-Distance", 5000);
         this.cooldown = worldConfig.getInt("Cooldown", 30);
         this.allowCaveTeleports = worldConfig.getBoolean("Allow-Cave-Teleports", false);
         this.highestY = worldConfig.getInt("Highest-Y", 320);
@@ -53,5 +53,14 @@ public final class RTPWorldSettings {
             if(world.getRegistryKey().getValue().toString().equals(this.worldName)) return world;
         }
         return null;
+    }
+
+    public boolean isInBounds(int x, int z) {
+        x = Math.abs(x);
+        z = Math.abs(z);
+        if(x < minDistance) return false;
+        if(x > maxDistance) return false;
+        if(z < minDistance) return false;
+        return z <= maxDistance;
     }
 }
