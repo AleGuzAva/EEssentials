@@ -1,11 +1,13 @@
 # DON'T TOUCH Config-Version OR THINGS WILL BREAK
-Config-Version: 1.0.2
+Config-Version: 1.1.0
 # Disable/Enable Command Modules:
 # Useful if you don't want a certain command on your server or if another mod handles a certain command
 Commands:
+  afk: true
   anvil: true
   ascend: true
   back: true
+  biomertp: true
   clearinventory: true
   hat: true
   home: true # Contains /home, /homes, /sethome, /delhome, /home:
@@ -22,7 +24,6 @@ Commands:
   playtime: true
   repair: true
   rtp: true
-  biomertp: true
   seen: true
   smite: true
   smithing: true
@@ -34,8 +35,17 @@ Commands:
   tp: true # contains /tphere, /tpoffline
   tpa: true # Contains /tpa, /tpahere, /tpaccept, /tpdeny, /tpacancel
   top: true
+  vanish: true
   warp: true # Contains /warp, /warps, /setwarp, /delwarp
   workbench: true
+AFK:
+# Setting this to False will prevent any AFK-Notifications from being sent in chat
+  Notifications: true
+  # In Seconds
+  AFK-Timer: 20
+  AFK-Kick-Timer: 40
+  # Command to run when a player is marked as AFK (leave empty if no command)
+  AFK-Command: "spawn {player}"
 Unsafe-Blocks:
 # These are used in multiple commands, such as RTP, Top, Ascend, and Descend.
 # These commands will never let the player land on or in these blocks.

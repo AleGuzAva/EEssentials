@@ -23,15 +23,14 @@ public class StonecutterScreen extends StonecutterScreenHandler {
         super.onClosed(player);
 
         // Dump the items from the crafting grid back to the player or drop them on the ground
-        for (int i = 1; i < 10; i++) {
-            Slot slot = this.getSlot(i);
-            ItemStack stack = slot.getStack();
-            if (!stack.isEmpty()) {
-                if (!player.giveItemStack(stack)) {
-                    player.dropItem(stack, false);
-                }
-                slot.setStack(ItemStack.EMPTY);
+        int i = 1;
+        Slot slot = this.getSlot(i);
+        ItemStack stack = slot.getStack();
+        if (!stack.isEmpty()) {
+            if (!player.giveItemStack(stack)) {
+                player.dropItem(stack, false);
             }
+            slot.setStack(ItemStack.EMPTY);
         }
     }
 }

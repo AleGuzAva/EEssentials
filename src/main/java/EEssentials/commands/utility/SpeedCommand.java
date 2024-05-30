@@ -27,7 +27,6 @@ public class SpeedCommand {
     public static final String SPEED_PERMISSION_NODE = "eessentials.speed.set";
     public static final String FLY_SPEED_PERMISSION_NODE = "eessentials.speed.fly";
     public static final String WALK_SPEED_PERMISSION_NODE = "eessentials.speed.walk";
-
     public static final String SPEED_OTHER_PERMISSION_NODE = "eessentials.speed.other";
 
 

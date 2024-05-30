@@ -10,11 +10,14 @@ import EEssentials.util.RandomHelper;
 import EEssentials.util.TeleportUtil;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.datafixers.util.Pair;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.RegistryEntryPredicateArgumentType;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -22,6 +25,8 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 
@@ -36,7 +41,7 @@ public class BiomeRTPCommand {
     public static final List<String> queuedPlayerNames = new ArrayList<>();
 
     /**
-     * Registers rtp commands.
+     * Registers biome rtp commands.
      *
      * @param dispatcher The command dispatcher to register commands on.
      */
@@ -48,9 +53,8 @@ public class BiomeRTPCommand {
             public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
                 return dispatcher.register(literal("biomertp")
                         .requires(source -> Permissions.check(source, BIOMERTP_PERMISSION_NODE, 2))
-                        .then(CommandManager.argument("biome",
-                                        RegistryEntryPredicateArgumentType
-                                                .registryEntryPredicate(registryAccess, RegistryKeys.BIOME))
+                        .then(CommandManager.argument("biome", StringArgumentType.greedyString())
+                                .suggests(suggestBiomes())
                                 .executes(context -> {
                                     ServerPlayerEntity player = context.getSource().getPlayer();
                                     if(player != null) {
@@ -62,10 +66,19 @@ public class BiomeRTPCommand {
                                                 if(!queuedPlayerNames.contains(player.getName().getString())) {
                                                     LangManager.send(context.getSource(), "RTP-Queued-Message");
                                                     queuedPlayerNames.add(player.getName().getString());
-                                                    CompletableFuture<Void> rtp = teleportToRandomLocation(player, worldSettings,
-                                                            RegistryEntryPredicateArgumentType.getRegistryEntryPredicate(context, "biome", RegistryKeys.BIOME));
-                                                    rtp.whenComplete((location, throwable) ->
-                                                            queuedPlayerNames.remove(player.getName().getString()));
+                                                    String biomeArg = StringArgumentType.getString(context, "biome");
+                                                    try {
+                                                        CompletableFuture<Void> rtp = teleportToRandomLocation(player, worldSettings, biomeArg);
+                                                        rtp.whenComplete((location, throwable) -> {
+                                                            if (throwable != null) {
+                                                                throwable.printStackTrace();
+                                                            }
+                                                            queuedPlayerNames.remove(player.getName().getString());
+                                                        });
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                        LangManager.send(context.getSource(), "RTP-Error");
+                                                    }
                                                 } else {
                                                     LangManager.send(context.getSource(), "RTP-Already-Queued-Message");
                                                 }
@@ -92,9 +105,9 @@ public class BiomeRTPCommand {
     }
 
     private static CompletableFuture<Void> teleportToRandomLocation(ServerPlayerEntity player, RTPWorldSettings worldSettings,
-                                                                    RegistryEntryPredicateArgumentType.EntryPredicate<Biome> biome) {
+                                                                    String biomeName) {
         return AsynchronousUtil.runTaskAsynchronously(() -> {
-            Location location = getRandomLocation(worldSettings, biome);
+            Location location = getRandomLocation(worldSettings, biomeName);
             Map<String, String> replacements = new HashMap<>();
             if(!player.isDisconnected()) {
                 if (location != null) {
@@ -106,20 +119,24 @@ public class BiomeRTPCommand {
                     replacements.put("{attempts}", String.valueOf(RTPSettings.getMaxAttempts()));
                     LangManager.send(player, "RTP-Location-Not-Found", replacements);
                 }
+            } else {
             }
             return null;
         });
     }
 
     private static Location getRandomLocation(RTPWorldSettings settings,
-                                              RegistryEntryPredicateArgumentType.EntryPredicate<Biome> biome) {
+                                              String biomeName) {
         ServerWorld world = settings.getWorld();
-        if(world == null) return null;
+        if(world == null) {
+            return null;
+        }
+        RegistryKey<Biome> biomeKey = RegistryKey.of(RegistryKeys.BIOME, new Identifier(biomeName));
         for(int i = 0; i< RTPSettings.getMaxAttempts(); i++) {
             int x = settings.getRandomIntInBounds();
             int y = 60;
             int z = settings.getRandomIntInBounds();
-            BlockPos biomePos = findBiome(world, new BlockPos(x, y, z), biome);
+            BlockPos biomePos = findBiome(world, new BlockPos(x, y, z), biomeKey);
             if(biomePos == null) continue;
             x = biomePos.getX();
             z = biomePos.getZ();
@@ -132,8 +149,8 @@ public class BiomeRTPCommand {
             if(y != -1000) {
                 Optional<RegistryKey<Biome>> optionalBiome = world.getBiome(new BlockPos(x,y,z)).getKey();
                 if(optionalBiome.isPresent()) {
-                    String biomeKey = optionalBiome.get().getValue().toString();
-                    if (!RTPSettings.isBiomeBlacklisted(biomeKey)) {
+                    String biomeKeyStr = optionalBiome.get().getValue().toString();
+                    if (!RTPSettings.isBiomeBlacklisted(biomeKeyStr)) {
                         return new Location(world, x, y, z);
                     }
                 }
@@ -143,11 +160,26 @@ public class BiomeRTPCommand {
     }
 
     private static BlockPos findBiome(ServerWorld world, BlockPos position,
-                                      RegistryEntryPredicateArgumentType.EntryPredicate<Biome> biome) {
-        Pair<BlockPos, RegistryEntry<Biome>> pair = world.locateBiome(biome, position,
+                                      RegistryKey<Biome> biomeKey) {
+        Pair<BlockPos, RegistryEntry<Biome>> pair = world.locateBiome(biome -> biome.matchesKey(biomeKey), position,
                 6400, 32, 64);
         if (pair == null) return null;
         return pair.getFirst();
     }
-}
 
+    private static SuggestionProvider<ServerCommandSource> suggestBiomes() {
+        return (context, builder) -> {
+            ServerCommandSource source = context.getSource();
+            Registry<Biome> biomeRegistry = source.getServer().getRegistryManager().get(RegistryKeys.BIOME);
+            biomeRegistry.streamEntries()
+                    .map(RegistryEntry::getKey)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(RegistryKey::getValue)
+                    .map(Identifier::toString)
+                    .filter(name -> !name.startsWith("#"))
+                    .forEach(name -> builder.suggest(name, Text.literal(name)));
+            return builder.buildFuture();
+        };
+    }
+}

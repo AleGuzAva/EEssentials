@@ -155,3 +155,9 @@ RTP-Success-Message: "<green>Successfully teleported to {x}, {y}, {z}."
 Top-Already-Highest: "<red>You're already at the highest point!"
 Top-Unsafe-Message: "<red>The surface was not safe to ascend to!"
 Top-Success-Message: "<green>Successfully teleported to the highest level."
+
+# Vanish
+Vanish-Enabled: "<gold>You have vanished!"
+Vanish-Disabled: "<gold>You're no longer vanished!"
+Vanish-Other-Enabled: "<gold>{player} has vanished!"
+Vanish-Other-Disabled: "<gold>{player} is no longer vanished!"

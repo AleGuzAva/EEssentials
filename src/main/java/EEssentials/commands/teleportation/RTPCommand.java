@@ -76,7 +76,7 @@ public class RTPCommand {
                                 LangManager.send(context.getSource(), "Invalid-Player-Only");
                             }
                             return Command.SINGLE_SUCCESS;
-                        }).then(argument("world", StringArgumentType.string())
+                        }).then(argument("world", StringArgumentType.greedyString())
                                 .requires(Permissions.require(RTP_SPECIFIC_PERMISSION_NODE, 2))
                                 .suggests(RTPCommand::suggestWorlds)
                                 .executes(context -> {
