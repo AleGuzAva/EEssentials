@@ -13,14 +13,18 @@ Commands:
   home: true # Contains /home, /homes, /sethome, /delhome, /home:
   descend: true
   disposal: true
+  enchant: true
   enderchest: true
   feed: true
   fly: true
   gm: true  # Contains /gma, /gmc, /gms, /gmsp
+  godmode: true
   grindstone: true
   heal: true
   ignore: true
+  itemeditor: true
   message: true # Contains /msg, /reply, /socialspy
+  near: true
   playtime: true
   repair: true
   rtp: true
@@ -35,7 +39,7 @@ Commands:
   tp: true # contains /tphere, /tpoffline
   tpa: true # Contains /tpa, /tpahere, /tpaccept, /tpdeny, /tpacancel
   top: true
-  vanish: true
+  unalive: true
   warp: true # Contains /warp, /warps, /setwarp, /delwarp
   workbench: true
 AFK:

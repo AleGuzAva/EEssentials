@@ -139,6 +139,9 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.disposal", true)) {
                 DisposalCommand.register(dispatcher);
             }
+            if (mainConfig.getBoolean("Commands.enchant", true)) {
+                EnchantCommand.register(dispatcher);
+            }
             if (mainConfig.getBoolean("Commands.enderchest", true)) {
                 EnderchestCommand.register(dispatcher);
             }
@@ -147,6 +150,9 @@ public class EEssentials implements ModInitializer {
             }
             if (mainConfig.getBoolean("Commands.fly", true)) {
                 FlyCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.godmode", true)) {
+                GodModeCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.grindstone", true)) {
                 GrindstoneCommand.register(dispatcher);
@@ -166,12 +172,18 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.invsee", true)) {
                 InvseeCommand.register(dispatcher);
             }
+            if (mainConfig.getBoolean("Commands.itemeditor", true)) {
+                ItemEditorCommand.register(dispatcher);
+            }
             if (mainConfig.getBoolean("Commands.gm", true)) {
                 GamemodeAliasesCommands.register(dispatcher); // includes /gma, /gmc, /gms, /gmsp
             }
             if (mainConfig.getBoolean("Commands.message", true)) {
                 MessageCommands.register(dispatcher); // includes /msg, /reply
                 SocialSpyCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.near", true)) {
+                NearCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.playtime", true)) {
                 PlaytimeCommand.register(dispatcher);
@@ -216,8 +228,8 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.tpa", true)) {
                 TPACommands.register(dispatcher); // includes /tpa, /tpahere, /tpaccept, /tpdeny, /tpacancel
             }
-            if (mainConfig.getBoolean("Commands.vanish", true)) {
-                VanishCommand.register(dispatcher);
+            if (mainConfig.getBoolean("Commands.unalive", true)) {
+                UnaliveCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.warp", true)) {
                 WarpCommands.register(dispatcher); //  includes /warp, /warps, /setwarp, /delwarp
