@@ -65,7 +65,7 @@ public class EEssentials implements ModInitializer {
     private static int afkTickCounter = 0;
 
     // Config
-    Configuration mainConfig = getConfig("config.yml");
+    private Configuration mainConfig;
 
     /**
      * Called during the mod initialization phase.
@@ -98,6 +98,7 @@ public class EEssentials implements ModInitializer {
 
         // Tells the asynchronous executor to shut down when the server does to not have hanging threads.
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> AsynchronousUtil.shutdown());
+
     }
 
     /**
@@ -109,8 +110,11 @@ public class EEssentials implements ModInitializer {
             // Reload Command - Should not be allowed to be toggled
             ReloadCommand.register(dispatcher);
 
-            AFKCommand.register(dispatcher);
+
             // Check if each command or command group is enabled before registering
+            if (mainConfig.getBoolean("Commands.afk", true)) {
+                AFKCommand.register(dispatcher);
+            }
             if (mainConfig.getBoolean("Commands.anvil", true)) {
                 AnvilCommand.register(dispatcher);
             }
@@ -119,6 +123,9 @@ public class EEssentials implements ModInitializer {
             }
             if (mainConfig.getBoolean("Commands.back", true)) {
                 BackCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.biomertp", true)) {
+                BiomeRTPCommand.register(dispatcher, registryAccess);
             }
             if (mainConfig.getBoolean("Commands.time", true)) {
                 CheckTimeCommand.register(dispatcher);
@@ -132,6 +139,9 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.disposal", true)) {
                 DisposalCommand.register(dispatcher);
             }
+            if (mainConfig.getBoolean("Commands.enchant", true)) {
+                EnchantCommand.register(dispatcher);
+            }
             if (mainConfig.getBoolean("Commands.enderchest", true)) {
                 EnderchestCommand.register(dispatcher);
             }
@@ -140,6 +150,9 @@ public class EEssentials implements ModInitializer {
             }
             if (mainConfig.getBoolean("Commands.fly", true)) {
                 FlyCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.godmode", true)) {
+                GodModeCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.grindstone", true)) {
                 GrindstoneCommand.register(dispatcher);
@@ -159,12 +172,18 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.invsee", true)) {
                 InvseeCommand.register(dispatcher);
             }
+            if (mainConfig.getBoolean("Commands.itemeditor", true)) {
+                ItemEditorCommand.register(dispatcher);
+            }
             if (mainConfig.getBoolean("Commands.gm", true)) {
                 GamemodeAliasesCommands.register(dispatcher); // includes /gma, /gmc, /gms, /gmsp
             }
             if (mainConfig.getBoolean("Commands.message", true)) {
                 MessageCommands.register(dispatcher); // includes /msg, /reply
                 SocialSpyCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.near", true)) {
+                NearCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.playtime", true)) {
                 PlaytimeCommand.register(dispatcher);
@@ -174,6 +193,9 @@ public class EEssentials implements ModInitializer {
             }
             if (mainConfig.getBoolean("Commands.rtp", true)) {
                 RTPCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.biomertp", true)) {
+                BiomeRTPCommand.register(dispatcher, registryAccess);
             }
             if (mainConfig.getBoolean("Commands.seen", true)) {
                 SeenCommand.register(dispatcher);
@@ -205,6 +227,9 @@ public class EEssentials implements ModInitializer {
             }
             if (mainConfig.getBoolean("Commands.tpa", true)) {
                 TPACommands.register(dispatcher); // includes /tpa, /tpahere, /tpaccept, /tpdeny, /tpacancel
+            }
+            if (mainConfig.getBoolean("Commands.unalive", true)) {
+                UnaliveCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.warp", true)) {
                 WarpCommands.register(dispatcher); //  includes /warp, /warps, /setwarp, /delwarp
@@ -343,8 +368,39 @@ public class EEssentials implements ModInitializer {
     }
 
     public void configManager() {
-        Configuration rtpConfig = mainConfig.getSection("Random-Teleport");
-        RTPSettings.reload(rtpConfig);
+        mainConfig = getConfig("config.yml");
+
+        // Load RTP configuration
+        Configuration rtpConfig = getConfig("rtp.yml");
+        Configuration rtpSection = rtpConfig.getSection("Random-Teleport");
+
+        String mainConfigVer = mainConfig.getString("Config-Version");
+
+        if (mainConfigVer.equals("1.0.1")) {
+            rtpSection = mainConfig.getSection("Random-Teleport");
+            if (rtpSection != null) {
+                if (rtpSection.contains("Minimum-Distance")) {
+                    rtpSection.set("Min-Distance", rtpSection.getInt("Minimum-Distance"));
+                    rtpSection.set("Minimum-Distance", null);
+                }
+                if (rtpSection.contains("Maximum-Distance")) {
+                    rtpSection.set("Max-Distance", rtpSection.getInt("Maximum-Distance"));
+                    rtpSection.set("Maximum-Distance", null);
+                }
+                rtpConfig.set("Random-Teleport", rtpSection);
+                saveConfig("rtp.yml", rtpConfig);
+            }
+            mainConfig.set("Config-Version", "1.0.2");
+            mainConfig.set("Commands.biomertp", true);
+            mainConfig.set("Random-Teleport", null);
+            saveConfig("config.yml", mainConfig);
+        }
+
+        if (rtpSection != null) {
+            RTPSettings.reload(rtpConfig, mainConfig);
+        } else {
+            LOGGER.warn("Random-Teleport section not found in rtp.yml");
+        }
 
         TeleportUtil.setUnsafeBlocks(mainConfig.getStringList("Unsafe-Blocks"));
         TeleportUtil.setAirBlocks(mainConfig.getStringList("Air-Blocks"));
@@ -352,9 +408,15 @@ public class EEssentials implements ModInitializer {
         HatSettings.reload(mainConfig.getSection("Hat"));
         RepairSettings.reload(mainConfig.getSection("Repair"));
 
+        Configuration afkConfig = mainConfig.getSection("AFK");
+
+        AFKManager.reload(afkConfig);
+
         Configuration langConfig = getConfig("lang.yml");
         LangManager.loadConfig(langConfig);
     }
+
+
 
     public List<String> getTextCommands() {
         File folder = null;
@@ -410,5 +472,21 @@ public class EEssentials implements ModInitializer {
             e.printStackTrace();
         }
         return config;
+    }
+
+    public void saveConfig(String fileName, Configuration config) {
+        try {
+            saveConfig(getOrCreateConfigurationFile(fileName), config);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveConfig(File file, Configuration config) {
+        try {
+            YamlConfiguration.save(config, file);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 }

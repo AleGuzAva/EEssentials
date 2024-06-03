@@ -1,0 +1,39 @@
+# DON'T TOUCH Config-Version OR THINGS WILL BREAK
+Config-Version: 1.0.2
+Random-Teleport:
+  Max-Attempts: 10
+  # How many attempts the plugin will take to find a safe location for a player to teleport to before giving up.
+  Worlds:
+    "minecraft:overworld":
+      # Any worlds not here will automatically be blacklisted. Case sensitive.
+      Min-Distance: 250
+      # The minimum distance from 0, 0 the random location must be.
+      # (I.E. if this is set to 250, your x and z coordinates MUST each be higher than 250.
+      Max-Distance: 5000
+      # The maximum distance from 0, 0 the random location must be.
+      # (I.E. if this is set to 5000, your x and z coordinates may not go higher than 5000.
+      Cooldown: 60
+      # The cooldown on random teleporting in this world, in seconds.
+      Allow-Cave-Teleports: false
+      # If true, players may randomly teleport into underground caves.
+      # Otherwise, it'll always land the player on the highest block exposed to air.
+      # If this is a nether world, set this to true.
+      Highest-Y: 320
+      # The highest Y the teleport may be.
+      # Suggested 127 for nether worlds to not allow players on the roof, 320 for anything else.
+    "minecraft:the_nether":
+      Redirect-To: "minecraft:overworld"
+      # Redirects this world's random teleports to the target world.
+    "minecraft:the_end":
+      Redirect-To: "minecraft:overworld"
+  Blacklisted-Biomes:
+    # This will never let the player RTP into these biomes.
+    - "minecraft:cold_ocean"
+    - "minecraft:deep_cold_ocean"
+    - "minecraft:deep_frozen_ocean"
+    - "minecraft:deep_lukewarm_ocean"
+    - "minecraft:deep_ocean"
+    - "minecraft:frozen_ocean"
+    - "minecraft:lukewarm_ocean"
+    - "minecraft:ocean"
+    - "minecraft:warm_ocean"

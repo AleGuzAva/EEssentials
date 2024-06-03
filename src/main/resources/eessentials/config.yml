@@ -1,24 +1,30 @@
 # DON'T TOUCH Config-Version OR THINGS WILL BREAK
-Config-Version: 1.0.1
+Config-Version: 1.1.0
 # Disable/Enable Command Modules:
 # Useful if you don't want a certain command on your server or if another mod handles a certain command
 Commands:
+  afk: true
   anvil: true
   ascend: true
   back: true
+  biomertp: true
   clearinventory: true
   hat: true
   home: true # Contains /home, /homes, /sethome, /delhome, /home:
   descend: true
   disposal: true
+  enchant: true
   enderchest: true
   feed: true
   fly: true
   gm: true  # Contains /gma, /gmc, /gms, /gmsp
+  godmode: true
   grindstone: true
   heal: true
   ignore: true
+  itemeditor: true
   message: true # Contains /msg, /reply, /socialspy
+  near: true
   playtime: true
   repair: true
   rtp: true
@@ -33,46 +39,17 @@ Commands:
   tp: true # contains /tphere, /tpoffline
   tpa: true # Contains /tpa, /tpahere, /tpaccept, /tpdeny, /tpacancel
   top: true
+  unalive: true
   warp: true # Contains /warp, /warps, /setwarp, /delwarp
   workbench: true
-Random-Teleport:
-  Max-Attempts: 10
-  # How many attempts the plugin will take to find a safe location for a player to teleport to before giving up.
-  Worlds:
-    "minecraft:overworld":
-    # You can change the world names to whatever you'd like, they're only visual, however changing them requires a server reboot.
-    # Any worlds not here will automatically be blacklisted. Case sensitive.
-      Min-Distance: 250
-      # The minimum distance from 0, 0 the random location must be.
-      # (I.E. if this is set to 250, your x and z coordinates MUST each be higher than 250.
-      Max-Distance: 5000
-      # The maximum distance from 0, 0 the random location must be.
-      # (I.E. if this is set to 5000, your x and z coordinates may not go higher than 5000.
-      Cooldown: 60
-      # The cooldown on random teleporting in this world, in seconds.
-      Allow-Cave-Teleports: false
-      # If true, players may randomly teleport into underground caves.
-      # Otherwise, it'll always land the player on the highest block exposed to air.
-      # If this is a nether world, set this to true.
-      Highest-Y: 320
-      # The highest Y the teleport may be.
-      # Suggested 127 for nether worlds to not allow players on the roof, 320 for anything else.
-    "minecraft:the_nether":
-      Redirect-To: "minecraft:overworld"
-      # Redirects this world's random teleports to the target world.
-    "minecraft:the_end":
-      Redirect-To: "minecraft:overworld"
-  Blacklisted-Biomes:
-    # This will never let the player RTP into these biomes.
-    - "minecraft:cold_ocean"
-    - "minecraft:deep_cold_ocean"
-    - "minecraft:deep_frozen_ocean"
-    - "minecraft:deep_lukewarm_ocean"
-    - "minecraft:deep_ocean"
-    - "minecraft:frozen_ocean"
-    - "minecraft:lukewarm_ocean"
-    - "minecraft:ocean"
-    - "minecraft:warm_ocean"
+AFK:
+# Setting this to False will prevent any AFK-Notifications from being sent in chat
+  Notifications: true
+  # In Seconds
+  AFK-Timer: 20
+  AFK-Kick-Timer: 40
+  # Command to run when a player is marked as AFK (leave empty if no command)
+  AFK-Command: "spawn {player}"
 Unsafe-Blocks:
 # These are used in multiple commands, such as RTP, Top, Ascend, and Descend.
 # These commands will never let the player land on or in these blocks.

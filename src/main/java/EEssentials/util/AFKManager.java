@@ -1,16 +1,19 @@
 package EEssentials.util;
 
+import EEssentials.config.Configuration;
 import EEssentials.lang.LangManager;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Vec3i;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -26,59 +29,85 @@ public class AFKManager {
     private static final HashMap<UUID, Vec3i> lastKnownPositions = new HashMap<>();
 
     // AFK time thresholds in ticks (20 ticks = 1 second)
-    //AFK after 30 minutes
-    private static final long AFK_THRESHOLD = 30 * 60 * 20;
-    //AFK Kick after 180 minutes
-    private static final long KICK_AFK_THRESHOLD = 180 * 60 * 20;
+    private static long AFK_THRESHOLD = 30 * 60 * 20;
+    private static long KICK_AFK_THRESHOLD = 60 * 60 * 20;
+    private static String AFK_COMMAND = "";
+    private static boolean afkNotificationsEnabled = true;
+    private static final Logger LOGGER = LoggerFactory.getLogger("AFKManager");
+
+
+    /**
+     * Reload the AFKManager settings.
+     * @param config The configuration map.
+     */
+    public static void reload(Configuration config) {
+
+        if (config.contains("Notifications")) {
+            afkNotificationsEnabled = config.getBoolean("Notifications");
+        } else {
+            LOGGER.warn("Notifications not found in config");
+        }
+
+        if (config.contains("AFK-Timer")) {
+            AFK_THRESHOLD = config.getInt("AFK-Timer") * 20L;
+        } else {
+            LOGGER.warn("AFK-Timer not found in config");
+        }
+
+        if (config.contains("AFK-Kick-Timer")) {
+            KICK_AFK_THRESHOLD = config.getInt("AFK-Kick-Timer") * 20L;
+        } else {
+            LOGGER.warn("AFK-Kick-Timer not found in config");
+        }
+
+        if (config.contains("AFK-Command")) {
+            AFK_COMMAND = config.getString("AFK-Command");
+        } else {
+            LOGGER.warn("AFK-Command not found in config");
+        }
+    }
 
     /**
      * Check the AFK status of all players on the server.
      * @param server The Minecraft server instance.
      */
     public static void checkAFKStatuses(MinecraftServer server) {
-        // Loop through each player on the server.
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             long currentTime = player.getServerWorld().getTime();
 
-            // Skip AFK checks for players with the exemption permission.
             if (Permissions.check(player, AFK_KICKEXEMPT_PERMISSION_NODE, 2)) {
                 continue;
             }
 
-            // If the player doesn't have a recorded last activity, reset it.
             if (!lastActivity.containsKey(player.getUuid())) {
                 resetActivity(player);
             }
 
-            // Fetch the last active time and current position of the player.
             long lastActiveTime = lastActivity.getOrDefault(player.getUuid(), currentTime);
             Vec3i currentBlockPos = new Vec3i(player.getBlockX(), player.getBlockY(), player.getBlockZ());
             Vec3i lastBlockPos = lastKnownPositions.getOrDefault(player.getUuid(), currentBlockPos);
 
             if (currentTime - lastActiveTime >= KICK_AFK_THRESHOLD && isAFK(player)) {
-                // Notify all players that the player was kicked for being AFK.
-                Map<String, String> kickReplacements = Map.of("{player}", player.getName().getString());
-                player.getServer().getPlayerManager().getPlayerList().forEach(onlinePlayer ->
-                        LangManager.send(onlinePlayer, "Player-Got-AFK-Kicked-Message", kickReplacements)
-                );
+                if (afkNotificationsEnabled) {
+                    Map<String, String> kickReplacements = Map.of("{player}", player.getName().getString());
+                    player.getServer().getPlayerManager().getPlayerList().forEach(onlinePlayer ->
+                            LangManager.send(onlinePlayer, "Player-Got-AFK-Kicked-Message", kickReplacements)
+                    );
+                    LangManager.send(player, "AFK-Kick-Message");
+                }
                 setAFK(player, false, false);
-                LangManager.send(player, "AFK-Kick-Message");  // Send kick message to the player being kicked
                 player.networkHandler.disconnect(Text.literal("You have been kicked for being AFK too long."));
             }
 
-
-            // If player moved, reset AFK status and activity timer.
             if (!currentBlockPos.equals(lastBlockPos)) {
                 resetActivity(player);
                 if (isAFK(player)) {
                     setAFK(player, false, true);
                 }
             } else if (currentTime - lastActiveTime >= AFK_THRESHOLD && !isAFK(player)) {
-                // If player didn't move but exceeded AFK threshold, mark them as AFK.
                 setAFK(player, true, true);
             }
 
-            // Update the player's last known position.
             lastKnownPositions.put(player.getUuid(), currentBlockPos);
         }
     }
@@ -133,10 +162,15 @@ public class AFKManager {
         if (afk != wasAFK) {
             if (afk) {
                 afkStatus.put(player.getUuid(), true);
+                if (!AFK_COMMAND.isEmpty()) {
+                    String command = AFK_COMMAND.replace("{player}", player.getName().getString());
+                    ServerCommandSource Console = player.getServer().getCommandSource().withLevel(4).withSilent();
+                    player.getServer().getCommandManager().executeWithPrefix(Console, command);
+                }
             } else {
                 afkStatus.remove(player.getUuid());
             }
-            if (notifyOthers) {
+            if (notifyOthers && afkNotificationsEnabled) {
                 notifyAFKStatusChange(player, afk);
             }
             resetActivity(player);
@@ -173,7 +207,6 @@ public class AFKManager {
                 LangManager.send(onlinePlayer, messageKey, replacements)
         );
     }
-
 }
 
 

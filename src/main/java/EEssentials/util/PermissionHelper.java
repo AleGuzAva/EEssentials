@@ -23,13 +23,6 @@ public class PermissionHelper {
         ).getUser(player);
     }
 
-    public Boolean hasPermission(ServerPlayerEntity player, String permission) {
-        var user = getLuckPermsUser(player);
-        var permData = user.getCachedData().getPermissionData();
-        if (permData.checkPermission(permission).asBoolean()) return true;
-        return permData.checkPermission("eessentials.admin").asBoolean();
-    }
-
     /**
      *
      * Iterates over all nodes a player inherits (sorted by permssion weight, largest first). It filters these nodes
@@ -44,15 +37,20 @@ public class PermissionHelper {
                 .map(node -> node.getKey().substring("eessentials.homes.".length()))
                 .toList();
 
+        int maxHomes = 0;
+
         for (String home: homes) {
             try {
-                return Integer.parseInt(home);
+                int homeCount = Integer.parseInt(home);
+                if (homeCount > maxHomes) {
+                    maxHomes = homeCount;
+                }
             } catch (NumberFormatException e) {
-                EEssentials.LOGGER.error("Non integer provided via eesentials.homes.<x> permission node.");
+                EEssentials.LOGGER.error("Non integer provided via eessentials.homes.<x> permission node.");
             }
         }
 
-        return 0;
+        return maxHomes;
     }
 
 }

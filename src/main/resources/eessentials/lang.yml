@@ -8,6 +8,20 @@ Invalid-Permission-All-Target: "<red>You don't have permission to target all pla
 Invalid-Player-Only: "<red>This command can only be used by a player!"
 Invalid-Self-Target: "<red>You cannot use this command on yourself."
 
+# Enchant
+Invalid-Item-In-Hand: "<red>You must have an item in your hand."
+Invalid-Enchantment: "<red>Invalid enchantment."
+Invalid-Enchantment-Or-Level: "<red>You do not have permission to apply this enchantment or level."
+Enchantment-Success: "<gold>Enchantment {enchantment} applied with level {level}."
+Unenchantment-Success: "<gold>Enchantment {enchantment} removed."
+Enchantment-Not-Present: "<red>Enchantment {enchantment} is not present on the item."
+Enchantment-Error: "<red>An error occurred while applying the enchantment."
+
+# Near Command
+Near-No-Players: "<red>No players nearby within {radius} blocks."
+Near-Player-List: "<gold>Nearby players:\n{playerList}"
+Near-Player-Entry: "<yellow>{player} <gold>is ~<yellow>{distance} <gold>blocks away"
+
 # Private Messages/Whispers
 Message-Receive: "<gold>[<red>{sender} <gold>-> <red>me<gold>] <white>{message}"
 Message-Send: "<gold>[<red>me <gold>-> <red>{receiver}<gold>] <white>{message}"
@@ -22,6 +36,15 @@ Unignore: "<gold>You are not ignoring player <red>{player} <gold>anymore."
 Ignore-Unignorable: "<red>{player} <gold>cannot be ignored."
 Ignore-List-Empty: "<gold>You haven't ignored any players."
 Ignore-List: "<gold>Ignored players: <white>{players}"
+
+# Item Editor
+Item-Name-Success: "<gold>Item has been renamed."
+Item-Name-Error: "<red>An error occurred while renaming the item."
+Item-Lore-Success: "<gold>Item lore has been changed."
+Item-Lore-Error: "<red>An error occurred while changing the item lore."
+Item-Reset-Success: "<gold>Item Name and Lore set to its original state."
+Item-Reset-Error: "<red>An error occurred while resetting the item."
+
 
 # Teleportation
 Teleporting-To-Location: "<gold>Teleporting to <red>{location}<gold>."
@@ -127,6 +150,12 @@ Ascended-Levels-Message: "<green>Successfully ascended {levels} level(s)."
 Descend-Location-Not-Found: "<red>No place to descend to!"
 Descended-Message: "<green>Successfully descended."
 Descended-Levels-Message: "<green>Successfully descended {levels} level(s)."
+
+# God Mode
+God-Mode-Enabled: "<gold>You are now invulnerable."
+God-Mode-Disabled: "<gold>You are no longer invulnerable."
+God-Mode-Other-Enabled: "<red>{player} <gold>is now invulnerable."
+God-Mode-Other-Disabled: "<red>{player} <gold>is no longer invulnerable."
 
 # Smite
 Smite-Message: "<green>Successfully summoned lightning!"

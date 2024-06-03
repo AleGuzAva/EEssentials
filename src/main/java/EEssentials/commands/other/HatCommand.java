@@ -45,8 +45,8 @@ public class HatCommand {
                                     playerInv.armor.set(3, heldItem);
                                     playerInv.main.set(selectedSlot, headItem);
                                     replacements.put("{item-hover}", ColorUtil.toMiniItemHover(heldItem));
-                                    replacements.put("{item-name}", ColorUtil.componentToString(heldItem.getName().asComponent()));
-                                    replacements.put("{item-name-unformatted}", heldItem.getName().getString());
+                                    replacements.put("{item-name-formatted}", ColorUtil.componentToString(heldItem.getName().asComponent()));
+                                    replacements.put("{item}", heldItem.getName().getString());
                                     replacements.put("{item-type}", "<lang:" + ((TranslatableComponent)heldItem.getItem().getName().asComponent()).key() + ">");
                                     LangManager.send(player, "Hat-Equipped-Message", replacements);
                                 } else {
