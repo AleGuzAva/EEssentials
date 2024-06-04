@@ -1,7 +1,7 @@
 # EEssentials
 
 # Description
-A Fabric Essentials Mod
+An EssentialsX-inspired sidemod for Fabric. Includes the commands every server needs - the essentials!
 
 ## Setup
 
@@ -11,4 +11,4 @@ Start the server.
 
 ## License
 
-This template is available under the GPLv3 license. Feel free to learn from it and incorporate it in your own projects.
+This template is available under the GPLv3 license. Feel free to learn from it and incorporate it into your projects.
