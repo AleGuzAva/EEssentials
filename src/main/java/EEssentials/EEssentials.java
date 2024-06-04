@@ -3,6 +3,7 @@ package EEssentials;
 import EEssentials.commands.other.*;
 import EEssentials.commands.teleportation.*;
 import EEssentials.commands.utility.*;
+import EEssentials.config.ConfigVersionUpdater;
 import EEssentials.config.Configuration;
 import EEssentials.config.YamlConfiguration;
 import EEssentials.lang.LangManager;
@@ -66,6 +67,7 @@ public class EEssentials implements ModInitializer {
 
     // Config
     private Configuration mainConfig;
+    private Configuration langConfig;
 
     /**
      * Called during the mod initialization phase.
@@ -98,7 +100,6 @@ public class EEssentials implements ModInitializer {
 
         // Tells the asynchronous executor to shut down when the server does to not have hanging threads.
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> AsynchronousUtil.shutdown());
-
     }
 
     /**
@@ -110,13 +111,9 @@ public class EEssentials implements ModInitializer {
             // Reload Command - Should not be allowed to be toggled
             ReloadCommand.register(dispatcher);
 
-
             // Check if each command or command group is enabled before registering
             if (mainConfig.getBoolean("Commands.afk", true)) {
                 AFKCommand.register(dispatcher);
-            }
-            if (mainConfig.getBoolean("Commands.anvil", true)) {
-                AnvilCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.ascend", true)) {
                 AscendCommand.register(dispatcher);
@@ -142,9 +139,6 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.enchant", true)) {
                 EnchantCommand.register(dispatcher);
             }
-            if (mainConfig.getBoolean("Commands.enderchest", true)) {
-                EnderchestCommand.register(dispatcher);
-            }
             if (mainConfig.getBoolean("Commands.feed", true)) {
                 FeedCommand.register(dispatcher);
             }
@@ -153,9 +147,6 @@ public class EEssentials implements ModInitializer {
             }
             if (mainConfig.getBoolean("Commands.godmode", true)) {
                 GodModeCommand.register(dispatcher);
-            }
-            if (mainConfig.getBoolean("Commands.grindstone", true)) {
-                GrindstoneCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.hat", true)) {
                 HatCommand.register(dispatcher);
@@ -203,17 +194,11 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.smite", true)) {
                 SmiteCommand.register(dispatcher);
             }
-            if (mainConfig.getBoolean("Commands.smithing", true)) {
-                SmithingCommand.register(dispatcher);
-            }
             if (mainConfig.getBoolean("Commands.spawn", true)) {
                 SpawnCommands.register(dispatcher); // includes /spawn, /setspawn
             }
             if (mainConfig.getBoolean("Commands.speed", true)) {
                 SpeedCommand.register(dispatcher);
-            }
-            if (mainConfig.getBoolean("Commands.stonecutter", true)) {
-                StonecutterCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.time", true)) {
                 CheckTimeCommand.register(dispatcher);
@@ -234,9 +219,17 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.warp", true)) {
                 WarpCommands.register(dispatcher); //  includes /warp, /warps, /setwarp, /delwarp
             }
-            if (mainConfig.getBoolean("Commands.workbench", true)) {
+            if (mainConfig.getBoolean("Commands.workstations", true)) {
+                AnvilCommand.register(dispatcher);
+                CartographyCommand.register(dispatcher);
+                EnderchestCommand.register(dispatcher);
+                GrindstoneCommand.register(dispatcher);
+                LoomCommand.register(dispatcher);
+                StonecutterCommand.register(dispatcher);
+                SmithingCommand.register(dispatcher);
                 WorkbenchCommand.register(dispatcher);
             }
+
             if (mainConfig.getBoolean("Commands.textCommands", true)) {
                 List<String> allTextCommands = getTextCommands();
                 for (String textCommand : allTextCommands) {
@@ -374,27 +367,12 @@ public class EEssentials implements ModInitializer {
         Configuration rtpConfig = getConfig("rtp.yml");
         Configuration rtpSection = rtpConfig.getSection("Random-Teleport");
 
-        String mainConfigVer = mainConfig.getString("Config-Version");
+        // Load Lang configuration
+        langConfig = getConfig("lang.yml");
 
-        if (mainConfigVer.equals("1.0.1")) {
-            rtpSection = mainConfig.getSection("Random-Teleport");
-            if (rtpSection != null) {
-                if (rtpSection.contains("Minimum-Distance")) {
-                    rtpSection.set("Min-Distance", rtpSection.getInt("Minimum-Distance"));
-                    rtpSection.set("Minimum-Distance", null);
-                }
-                if (rtpSection.contains("Maximum-Distance")) {
-                    rtpSection.set("Max-Distance", rtpSection.getInt("Maximum-Distance"));
-                    rtpSection.set("Maximum-Distance", null);
-                }
-                rtpConfig.set("Random-Teleport", rtpSection);
-                saveConfig("rtp.yml", rtpConfig);
-            }
-            mainConfig.set("Config-Version", "1.0.2");
-            mainConfig.set("Commands.biomertp", true);
-            mainConfig.set("Random-Teleport", null);
-            saveConfig("config.yml", mainConfig);
-        }
+        // Update config and lang files
+        ConfigVersionUpdater updater = new ConfigVersionUpdater(mainConfig, langConfig, "1.1.0");
+        updater.updateConfig();
 
         if (rtpSection != null) {
             RTPSettings.reload(rtpConfig, mainConfig);
@@ -409,14 +387,34 @@ public class EEssentials implements ModInitializer {
         RepairSettings.reload(mainConfig.getSection("Repair"));
 
         Configuration afkConfig = mainConfig.getSection("AFK");
-
         AFKManager.reload(afkConfig);
 
-        Configuration langConfig = getConfig("lang.yml");
         LangManager.loadConfig(langConfig);
     }
 
+    public File getOrCreateConfigurationFile(String fileName) throws IOException {
+        File configFolder = getConfigFolder();
+        File configFile = new File(configFolder, fileName);
 
+        // Ensure parent directories exist
+        File parentDir = configFile.getParentFile();
+        if (!parentDir.exists()) {
+            parentDir.mkdirs(); // Create parent directories if they don't exist
+        }
+
+        // Create the file if it doesn't exist
+        if (!configFile.exists()) {
+            try (FileOutputStream outputStream = new FileOutputStream(configFile)) {
+                Path path = Paths.get("eessentials", fileName);
+                InputStream in = getClass().getClassLoader().getResourceAsStream(path.toString().replace("\\", "/"));
+                if (in == null) {
+                    throw new RuntimeException(fileName + " resource not found");
+                }
+                in.transferTo(outputStream);
+            }
+        }
+        return configFile;
+    }
 
     public List<String> getTextCommands() {
         File folder = null;
@@ -444,26 +442,6 @@ public class EEssentials implements ModInitializer {
         return configFolder;
     }
 
-    public File getOrCreateConfigurationFile(String fileName) throws IOException {
-        File configFolder = getConfigFolder();
-        File configFile = new File(configFolder, fileName);
-
-        // Ensure parent directories exist
-        File parentDir = configFile.getParentFile();
-        if (!parentDir.exists()) {
-            parentDir.mkdirs(); // Create parent directories if they don't exist
-        }
-
-        // Create the file if it doesn't exist
-        if (!configFile.exists()) {
-            FileOutputStream outputStream = new FileOutputStream(configFile);
-            Path path = Paths.get("eessentials", fileName);
-            InputStream in = getClass().getClassLoader().getResourceAsStream(path.toString().replace("\\", "/"));
-            in.transferTo(outputStream);
-        }
-        return configFile;
-    }
-
     public Configuration getConfig(String fileName) {
         Configuration config = null;
         try {
@@ -473,7 +451,6 @@ public class EEssentials implements ModInitializer {
         }
         return config;
     }
-
     public void saveConfig(String fileName, Configuration config) {
         try {
             saveConfig(getOrCreateConfigurationFile(fileName), config);

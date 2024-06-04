@@ -1,5 +1,5 @@
 # DON'T TOUCH Config-Version OR THINGS WILL BREAK
-Config-Version: 1.0.1
+Config-Version: 1.1.0
 # We Support Legacy and MiniMessage Formatting!
 # Errors
 Invalid-Player: "<red>Error: Player not found."
@@ -44,7 +44,6 @@ Item-Lore-Success: "<gold>Item lore has been changed."
 Item-Lore-Error: "<red>An error occurred while changing the item lore."
 Item-Reset-Success: "<gold>Item Name and Lore set to its original state."
 Item-Reset-Error: "<red>An error occurred while resetting the item."
-
 
 # Teleportation
 Teleporting-To-Location: "<gold>Teleporting to <red>{location}<gold>."

@@ -1,5 +1,5 @@
 # DON'T TOUCH Config-Version OR THINGS WILL BREAK
-Config-Version: 1.0.2
+Config-Version: 1.1.0
 Random-Teleport:
   Max-Attempts: 10
   # How many attempts the plugin will take to find a safe location for a player to teleport to before giving up.
@@ -17,7 +17,7 @@ Random-Teleport:
       Allow-Cave-Teleports: false
       # If true, players may randomly teleport into underground caves.
       # Otherwise, it'll always land the player on the highest block exposed to air.
-      # If this is a nether world, set this to true.
+      # If this is a nether or end world, set this to true.
       Highest-Y: 320
       # The highest Y the teleport may be.
       # Suggested 127 for nether worlds to not allow players on the roof, 320 for anything else.

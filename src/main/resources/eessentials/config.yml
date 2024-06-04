@@ -4,7 +4,6 @@ Config-Version: 1.1.0
 # Useful if you don't want a certain command on your server or if another mod handles a certain command
 Commands:
   afk: true
-  anvil: true
   ascend: true
   back: true
   biomertp: true
@@ -14,12 +13,10 @@ Commands:
   descend: true
   disposal: true
   enchant: true
-  enderchest: true
   feed: true
   fly: true
   gm: true  # Contains /gma, /gmc, /gms, /gmsp
   godmode: true
-  grindstone: true
   heal: true
   ignore: true
   itemeditor: true
@@ -30,10 +27,8 @@ Commands:
   rtp: true
   seen: true
   smite: true
-  smithing: true
   spawn: true # Contains /spawn, /setspawn
   speed: true
-  stonecutter: true
   textcommands: true
   time: true
   tp: true # contains /tphere, /tpoffline
@@ -41,15 +36,15 @@ Commands:
   top: true
   unalive: true
   warp: true # Contains /warp, /warps, /setwarp, /delwarp
-  workbench: true
+  workstations: true # Contains anvil, cartography, enderchest, grindstone, loom, smithing, stonecutter, and workbench
 AFK:
 # Setting this to False will prevent any AFK-Notifications from being sent in chat
   Notifications: true
   # In Seconds
-  AFK-Timer: 20
-  AFK-Kick-Timer: 40
+  AFK-Timer: 1800
+  AFK-Kick-Timer: 3600
   # Command to run when a player is marked as AFK (leave empty if no command)
-  AFK-Command: "spawn {player}"
+  AFK-Command: ""
 Unsafe-Blocks:
 # These are used in multiple commands, such as RTP, Top, Ascend, and Descend.
 # These commands will never let the player land on or in these blocks.

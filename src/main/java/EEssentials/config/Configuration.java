@@ -8,7 +8,7 @@ import java.util.*;
  * To get a {@link Configuration} from a .yml file, use {@link YamlConfiguration#loadConfiguration(File)}.
  * You may create a new {@link Configuration} at any point by using the constructor.
  */
-public final class Configuration {
+public class Configuration {
     private static final char SEPARATOR = '.';
     final Map<String, Object> self;
     private final Configuration defaults;
@@ -328,3 +328,4 @@ public final class Configuration {
         return (val != null) ? val : def;
     }
 }
+

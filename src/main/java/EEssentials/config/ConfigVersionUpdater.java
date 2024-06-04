@@ -1,19 +1,21 @@
 package EEssentials.config;
 
+import com.google.common.base.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 public class ConfigVersionUpdater {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigVersionUpdater.class);
     private final Configuration mainConfig;
+    private final Configuration langConfig;
     private final String currentVersion;
 
-    public ConfigVersionUpdater(Configuration mainConfig, String currentVersion) {
+    public ConfigVersionUpdater(Configuration mainConfig, Configuration langConfig, String currentVersion) {
         this.mainConfig = mainConfig;
+        this.langConfig = langConfig;
         this.currentVersion = currentVersion;
     }
 
@@ -23,36 +25,52 @@ public class ConfigVersionUpdater {
         if (!configVersion.equals(currentVersion)) {
             LOGGER.info("Updating config from version " + configVersion + " to " + currentVersion);
 
-            updateToLatest(configVersion, currentVersion);
+            Configuration defaultConfig = YamlConfiguration.loadConfiguration(
+                    getClass().getClassLoader().getResourceAsStream("eessentials/config.yml"));
+            mergeConfigs(mainConfig, defaultConfig);
 
             mainConfig.set("Config-Version", currentVersion);
 
             try {
-                YamlConfiguration.save(mainConfig, new File("config/EEssentials/config.yml"));
+                // Save the config with comments
+                saveConfigWithComments(mainConfig, "eessentials/config.yml", new File("config/EEssentials/config.yml"));
             } catch (IOException e) {
                 LOGGER.error("Failed to save updated config!", e);
             }
         }
+
+        String langVersion = langConfig.getString("Config-Version", "1.0.0");
+
+        if (!langVersion.equals(currentVersion)) {
+            LOGGER.info("Updating lang config from version " + langVersion + " to " + currentVersion);
+
+            Configuration defaultLangConfig = YamlConfiguration.loadConfiguration(
+                    getClass().getClassLoader().getResourceAsStream("eessentials/lang.yml"));
+            mergeConfigs(langConfig, defaultLangConfig);
+
+            langConfig.set("Config-Version", currentVersion);
+
+            try {
+                // Save the lang config with comments
+                saveConfigWithComments(langConfig, "eessentials/lang.yml", new File("config/EEssentials/lang.yml"));
+            } catch (IOException e) {
+                LOGGER.error("Failed to save updated lang config!", e);
+            }
+        }
     }
 
-    private void updateToLatest(String oldVersion, String newVersion) {
-        if (isOlderVersion(oldVersion, "1.0.1")) {
-            addMissingKeysFor1_0_1();
-        }
-    }
-
-    private void addMissingKeysFor1_0_1() {
-        if (!mainConfig.contains("Commands.anvil")) {
-            mainConfig.set("Commands.anvil", true);
-        }
-        if (!mainConfig.contains("Commands.grindstone")) {
-            mainConfig.set("Commands.grindstone", true);
-        }
-        if (!mainConfig.contains("Commands.smithing")) {
-            mainConfig.set("Commands.smithing", true);
-        }
-        if (!mainConfig.contains("Commands.stonecutter")) {
-            mainConfig.set("Commands.stonecutter", true);
+    private void mergeConfigs(Configuration target, Configuration source) {
+        for (String key : source.getKeys()) {
+            if (source.get(key) instanceof Configuration) {
+                if (!(target.get(key) instanceof Configuration)) {
+                    target.set(key, new Configuration());
+                }
+                mergeConfigs(target.getSection(key), source.getSection(key));
+            } else {
+                if (!target.contains(key)) {
+                    target.set(key, source.get(key));
+                }
+            }
         }
     }
 
@@ -77,5 +95,16 @@ public class ConfigVersionUpdater {
             numbers[i] = Integer.parseInt(parts[i]);
         }
         return numbers;
+    }
+
+    private void saveConfigWithComments(Configuration config, String resourcePath, File file) throws IOException {
+        // Load the default configuration from the resource file
+        InputStream resourceStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
+        String defaultConfigContent = new String(resourceStream.readAllBytes(), Charsets.UTF_8);
+
+        // Save the configuration to the file
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8)) {
+            writer.write(defaultConfigContent);
+        }
     }
 }
