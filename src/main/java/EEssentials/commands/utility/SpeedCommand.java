@@ -9,6 +9,9 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -107,8 +110,18 @@ public class SpeedCommand {
         ServerPlayerEntity player = source.getPlayer();
 
         // Adjust the walking speed
-        ((PlayerAbilitiesMixin) player.getAbilities()).setWalkSpeed(0.1f * speedMultiplier);
-        player.sendAbilitiesUpdate();
+        // ((PlayerAbilitiesMixin) player.getAbilities()).setWalkSpeed(0.1f * speedMultiplier);
+        // player.sendAbilitiesUpdate();
+
+        // Instead of directly changing the player's speed, this will add a modifier to the player's speed attribute.
+        // Will interfere with mods that also use this method to change speed and use the same UUID.
+        if (player == null) return 1;
+        EntityAttributeInstance attribute = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED); // Get current speed attribute
+        EntityAttributeModifier modifier = new EntityAttributeModifier(player.getUuid(), "Movement Speed Boost",  speedMultiplier - 1, EntityAttributeModifier.Operation.MULTIPLY_BASE); // Create new modifier with player UUID
+
+        if (attribute == null) return 1;
+        attribute.removeModifier(player.getUuid()); // Remove previous modifier
+        attribute.addPersistentModifier(modifier); // Add modifier with new speed
 
         // Send appropriate messages
         Map<String, String> replacements = Map.of(
