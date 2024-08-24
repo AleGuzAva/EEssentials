@@ -1,9 +1,6 @@
 package EEssentials.settings;
 
 import EEssentials.config.Configuration;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
@@ -15,10 +12,9 @@ public abstract class HatSettings {
 
     public static boolean isBlacklisted(ItemStack item) {
         String itemID = Registries.ITEM.getId(item.getItem()).toString();
-        ComponentMap itemNbt = item.getComponents();
+        NbtCompound itemNbt = item.getNbt();
         if(itemNbt != null) {
-            CustomModelDataComponent customModelDataComponent = item.get(DataComponentTypes.CUSTOM_MODEL_DATA);
-            int customModelData = customModelDataComponent != null ? customModelDataComponent.value() : 0;
+            int customModelData = itemNbt.getInt("CustomModelData");
             System.out.println(customModelData);
             return blacklistedItems.contains(itemID) || blacklistedItems.contains(itemID + ":" + customModelData);
         } else return blacklistedItems.contains(itemID);
