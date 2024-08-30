@@ -101,6 +101,7 @@ public class EssentialCommandsImporter {
             return;
         }
 
+        /*
         try {
             NbtCompound nbtData = NbtIo.readCompressed(dataFile).getCompound("data");
             Location spawnLoc = Location.fromEssentialCommandsNbt(nbtData.getCompound("spawn"));
@@ -121,7 +122,7 @@ public class EssentialCommandsImporter {
         } catch (IOException e) {
             EEssentials.LOGGER.error("Error when trying to read Essential Commands World Data...");
             return;
-        }
+        }*/
     }
 
     /**
@@ -133,7 +134,7 @@ public class EssentialCommandsImporter {
         if (ecFile == null) {
             return;
         }
-
+/*
         try {
             NbtCompound nbtData = NbtIo.readCompressed(new FileInputStream(ecFile));
             NbtElement homeData = nbtData.getCompound("data").get("homes");
@@ -151,7 +152,7 @@ public class EssentialCommandsImporter {
             storage.save();
         } catch (IOException e) {
             EEssentials.LOGGER.warn("Failed to load data from EssentialCommands for importing. Player File: " + storage.playerUUID);
-        }
+        }*/
 
     }
 

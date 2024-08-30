@@ -74,7 +74,7 @@ dependencies {
 
 	// MiniMessage stuffs
 	modImplementation include("net.kyori:adventure-text-minimessage:4.17.0")
-	modImplementation include("net.kyori:adventure-platform-fabric:5.8.0")
+	modImplementation include("net.kyori:adventure-platform-fabric:5.14.1")
 }
 
 processResources {

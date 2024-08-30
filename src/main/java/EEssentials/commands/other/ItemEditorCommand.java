@@ -2,22 +2,22 @@ package EEssentials.commands.other;
 
 import EEssentials.lang.LangManager;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import eu.pb4.placeholders.api.TextParserUtils;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
-import net.minecraft.item.ItemStack;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -64,12 +64,11 @@ public class ItemEditorCommand {
     /**
      * Renames the item in the player's hand.
      *
-     * @param ctx The command context.
+     * @param ctx  The command context.
      * @param name The new name for the item.
      * @return 1 if successful, 0 otherwise.
-     * @throws CommandSyntaxException If the command execution fails.
      */
-    private static int renameItem(CommandContext<ServerCommandSource> ctx, String name) throws CommandSyntaxException {
+    private static int renameItem(CommandContext<ServerCommandSource> ctx, String name) {
         ServerPlayerEntity player = ctx.getSource().getPlayer();
         if (player == null) {
             LangManager.send(ctx.getSource(), "Invalid-Player-Only");
@@ -89,7 +88,7 @@ public class ItemEditorCommand {
 
         try {
             MutableText newName = TextParserUtils.formatText(name).copy();
-            itemStack.setCustomName(newName);
+            itemStack.set(DataComponentTypes.CUSTOM_NAME, newName);
             LangManager.send(ctx.getSource(), "Item-Name-Success");
             return 1;
         } catch (Exception e) {
@@ -102,7 +101,7 @@ public class ItemEditorCommand {
     /**
      * Adds lore to the item in the player's hand.
      *
-     * @param ctx The command context.
+     * @param ctx  The command context.
      * @param lore The new lore for the item.
      * @return 1 if successful, 0 otherwise.
      * @throws CommandSyntaxException If the command execution fails.
@@ -114,7 +113,7 @@ public class ItemEditorCommand {
     /**
      * Edits the lore of the item in the player's hand.
      *
-     * @param ctx The command context.
+     * @param ctx  The command context.
      * @param line The line number to edit.
      * @param lore The new lore for the item.
      * @return 1 if successful, 0 otherwise.
@@ -127,7 +126,7 @@ public class ItemEditorCommand {
     /**
      * Deletes lore from the item in the player's hand.
      *
-     * @param ctx The command context.
+     * @param ctx  The command context.
      * @param line The line number to delete.
      * @return 1 if successful, 0 otherwise.
      * @throws CommandSyntaxException If the command execution fails.
@@ -139,7 +138,7 @@ public class ItemEditorCommand {
     /**
      * Modifies the lore of the item in the player's hand.
      *
-     * @param ctx The command context.
+     * @param ctx  The command context.
      * @param line The line number to modify (-1 for add).
      * @param lore The new lore for the item (null for delete).
      * @return 1 if successful, 0 otherwise.
@@ -164,34 +163,31 @@ public class ItemEditorCommand {
         }
 
         try {
-            NbtCompound displayTag = itemStack.getOrCreateSubNbt("display");
-            NbtList loreList = displayTag.contains("Lore") ? displayTag.getList("Lore", NbtElement.STRING_TYPE) : new NbtList();
+            NbtComponent displayTag = itemStack.get(DataComponentTypes.ENTITY_DATA);
 
-            if (lore == null) {
-                if (line > 0 && line <= loreList.size()) {
-                    loreList.remove(line - 1);
-                } else {
-                    LangManager.send(ctx.getSource(), "Item-Lore-Error");
-                    return 0;
-                }
-            } else {
-                MutableText loreText = TextParserUtils.formatTextSafe(lore).copy();
+            if (displayTag != null && displayTag.contains("Lore")) {
+                NbtCompound displayNbt = displayTag.copyNbt();
+                NbtList loreList = displayNbt.getList("Lore", NbtElement.STRING_TYPE);
 
-                if (line == -1) {
-                    loreList.add(NbtString.of(Text.Serializer.toJson(loreText)));
-                } else {
+                if (lore == null) {
                     if (line > 0 && line <= loreList.size()) {
-                        loreList.set(line - 1, NbtString.of(Text.Serializer.toJson(loreText)));
+                        loreList.remove(line - 1);
                     } else {
                         LangManager.send(ctx.getSource(), "Item-Lore-Error");
                         return 0;
                     }
                 }
-            }
 
-            displayTag.put("Lore", loreList);
-            LangManager.send(ctx.getSource(), "Item-Lore-Success");
-            return 1;
+                // Update the NbtComponent with the modified lore list
+                displayNbt.put("Lore", loreList);
+                itemStack.set(DataComponentTypes.ENTITY_DATA, NbtComponent.of(displayNbt));
+
+                LangManager.send(ctx.getSource(), "Item-Lore-Updated");
+                return 1;
+            } else {
+                LangManager.send(ctx.getSource(), "Item-Lore-Error");
+                return 0;
+            }
         } catch (Exception e) {
             LangManager.send(ctx.getSource(), "Item-Lore-Error");
             e.printStackTrace();
@@ -225,14 +221,25 @@ public class ItemEditorCommand {
         }
 
         try {
-            NbtCompound displayTag = itemStack.getOrCreateSubNbt("display");
+            // Retrieve or create the NbtComponent for the 'display' tag
+            NbtComponent displayTag = itemStack.get(DataComponentTypes.ENTITY_DATA);
 
-            // Remove custom name and lore
-            displayTag.remove("Name");
-            displayTag.remove("Lore");
+            if (displayTag != null) {
+                NbtCompound displayNbt = displayTag.copyNbt();
 
-            LangManager.send(player, "Item-Reset-Success");
-            return 1;
+                // Remove custom name and lore
+                displayNbt.remove("Name");
+                displayNbt.remove("Lore");
+
+                // Update the NbtComponent with the modified NbtCompound
+                itemStack.set(DataComponentTypes.ENTITY_DATA, NbtComponent.of(displayNbt));
+
+                LangManager.send(player, "Item-Reset-Success");
+                return 1;
+            } else {
+                LangManager.send(player, "Item-Reset-Error");
+                return 0;
+            }
         } catch (Exception e) {
             LangManager.send(player, "Item-Reset-Error");
             e.printStackTrace();
