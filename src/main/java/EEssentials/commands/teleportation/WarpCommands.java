@@ -39,7 +39,7 @@ public class WarpCommands {
                 .then(argument("name", StringArgumentType.word())
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
-                            String warpName = StringArgumentType.getString(ctx, "name").toLowerCase();
+                            String warpName = StringArgumentType.getString(ctx, "name");
 
                             // Use these values to create the new Location
                             Location warpLocation = new Location(player.getServerWorld(), player.getX(), player.getY(), player.getZ(), player.getPitch(), player.getYaw());
@@ -57,11 +57,18 @@ public class WarpCommands {
                 .requires(Permissions.require(WARP_DELETE_PERMISSION_NODE, 2))
                 .then(argument("name", StringArgumentType.word())
                         .suggests((ctx, builder) -> {
-                            return CommandSource.suggestMatching(EEssentials.storage.locationManager.getWarpNames(), builder);
+                            String input = builder.getRemaining().toLowerCase();
+                            return CommandSource.suggestMatching(
+                                    EEssentials.storage.locationManager.getWarpNames().stream()
+                                            .filter(warp -> warp.toLowerCase().startsWith(input))
+                                            .distinct()
+                                            .sorted(),
+                                    builder
+                            );
                         })
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
-                            String warpName = StringArgumentType.getString(ctx, "name").toLowerCase();
+                            String warpName = StringArgumentType.getString(ctx, "name");
 
                             if (EEssentials.storage.locationManager.getWarp(warpName) != null) {
                                 EEssentials.storage.locationManager.deleteWarp(warpName);
@@ -80,10 +87,18 @@ public class WarpCommands {
         dispatcher.register(literal("warp")
                 .requires(Permissions.require(WARP_PERMISSION_NODE, 2))
                 .then(argument("name", StringArgumentType.word())
-                        .suggests((ctx, builder) -> CommandSource.suggestMatching(EEssentials.storage.locationManager.getWarpNames(), builder))
-                        .executes(ctx -> {
+                        .suggests((ctx, builder) -> {
+                            String input = builder.getRemaining().toLowerCase();
+                            return CommandSource.suggestMatching(
+                                    EEssentials.storage.locationManager.getWarpNames().stream()
+                                            .filter(warp -> warp.toLowerCase().startsWith(input))
+                                            .distinct()
+                                            .sorted(),
+                                    builder
+                            );
+                        })                        .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
-                            String warpName = StringArgumentType.getString(ctx, "name").toLowerCase();
+                            String warpName = StringArgumentType.getString(ctx, "name");
 
                             return teleportToWarp(player, warpName);
                         })

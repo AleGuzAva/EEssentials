@@ -29,7 +29,7 @@ public class HatCommand {
             public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
                 Map<String, String> replacements = new HashMap<>();
                 return dispatcher.register(literal("hat")
-                        .requires(source -> Permissions.check(source, HAT_PERMISSION_NODE, 0))
+                        .requires(source -> Permissions.check(source, HAT_PERMISSION_NODE, 2))
                         .executes(context -> {
                             ServerPlayerEntity player = context.getSource().getPlayer();
                             if(player != null) {
@@ -39,7 +39,7 @@ public class HatCommand {
                                 if(heldItem.isEmpty()) {
                                     LangManager.send(player, "Hat-Hand-Empty-Message");
                                 } else if(
-                                        Permissions.check(player, HAT_BLACKLIST_BYPASS_NODE, 1) ||
+                                        Permissions.check(player, HAT_BLACKLIST_BYPASS_NODE, 2) ||
                                                 !HatSettings.isBlacklisted(heldItem)){
                                     ItemStack headItem = playerInv.armor.get(3);
                                     playerInv.armor.set(3, heldItem);
