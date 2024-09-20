@@ -131,7 +131,7 @@ public class BiomeRTPCommand {
         if(world == null) {
             return null;
         }
-        RegistryKey<Biome> biomeKey = RegistryKey.of(RegistryKeys.BIOME, new Identifier(biomeName));
+        RegistryKey<Biome> biomeKey = RegistryKey.of(RegistryKeys.BIOME, Identifier.of(biomeName));
         for(int i = 0; i< RTPSettings.getMaxAttempts(); i++) {
             int x = settings.getRandomIntInBounds();
             int y = 60;

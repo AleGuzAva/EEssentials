@@ -7,7 +7,8 @@
 	"authors": [
 		"Novoro",
 		"complacentdev",
-		"Neovitalism"
+		"Neovitalism",
+		"GuitarXpress"
 	],
 	"contact": {
 		"homepage": "https://github.com/AleGuzAva/EEssentials",
@@ -26,7 +27,7 @@
 	],
 	"depends": {
 		"java": ">=17",
-		"minecraft": "~1.20.1",
+		"minecraft": "~1.21.1",
 		"fabric-api": "*",
 		"fabricloader": ">=0.14.21",
 		"luckperms": "*"

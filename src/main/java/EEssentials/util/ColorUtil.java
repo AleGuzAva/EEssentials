@@ -7,6 +7,7 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 
@@ -91,7 +92,7 @@ public class ColorUtil {
     }
 
     public static String toMiniItemHover(ItemStack item) {
-        NbtCompound itemNBT = item.getNbt();
+        ComponentMap itemNBT = item.getComponents();
         if(itemNBT != null) {
             return "<hover:show_item:"
                     + item.getItem().getName().getString()

@@ -13,6 +13,7 @@ Commands:
   descend: true
   disposal: true
   enchant: true
+  enchantmenttable: true
   feed: true
   fly: true
   gm: true  # Contains /gma, /gmc, /gms, /gmsp

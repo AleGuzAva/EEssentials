@@ -8,9 +8,15 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandSource;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -20,6 +26,7 @@ import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class EnchantCommand {
@@ -28,13 +35,20 @@ public class EnchantCommand {
     public static final String ENCHANT_UNRESTRICTED_PERMISSION_NODE = "eessentials.enchant.unrestricted";
 
     private static final SuggestionProvider<ServerCommandSource> ENCHANTMENT_SUGGESTIONS = (context, builder) -> {
+
         ServerPlayerEntity player = context.getSource().getPlayer();
         boolean unrestricted = Permissions.check(player, ENCHANT_UNRESTRICTED_PERMISSION_NODE, 2);
 
+        Registry<Enchantment> enchantmentRegistry = context.getSource().getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT);
+
         return CommandSource.suggestMatching(
-                Registries.ENCHANTMENT.stream()
+                enchantmentRegistry.stream()
                         .filter(enchantment -> unrestricted || enchantment.isAcceptableItem(player.getStackInHand(Hand.MAIN_HAND)))
-                        .map(enchantment -> Registries.ENCHANTMENT.getId(enchantment).toString().replace("minecraft:", ""))
+                        .map(enchantment -> {
+                            Optional<RegistryKey<Enchantment>> keyOptional = enchantmentRegistry.getKey(enchantment);
+                            return keyOptional.map(key -> key.getValue().toString().replace("minecraft:", "")).orElse(null);
+                        })
+                        .filter(id -> id != null)
                         .collect(Collectors.toList()),
                 builder);
     };
@@ -47,10 +61,19 @@ public class EnchantCommand {
             return builder.buildFuture();
         }
 
-        Map<Enchantment, Integer> enchantments = EnchantmentHelper.get(itemStack);
+        // Get the enchantments component from the item stack
+        ItemEnchantmentsComponent enchantmentsComponent = EnchantmentHelper.getEnchantments(itemStack);
+
+        // Get the enchantment registry using the registry manager
+        Registry<Enchantment> enchantmentRegistry = context.getSource().getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT);
+
         return CommandSource.suggestMatching(
-                enchantments.keySet().stream()
-                        .map(enchantment -> Registries.ENCHANTMENT.getId(enchantment).toString().replace("minecraft:", ""))
+                enchantmentsComponent.getEnchantmentEntries().stream()
+                        .map(entry -> {
+                            Optional<RegistryKey<Enchantment>> keyOptional = enchantmentRegistry.getKey(entry.getKey().value());
+                            return keyOptional.map(key -> key.getValue().toString().replace("minecraft:", "")).orElse(null);
+                        })
+                        .filter(id -> id != null) // Filter out any null values
                         .collect(Collectors.toList()),
                 builder);
     };
@@ -84,21 +107,30 @@ public class EnchantCommand {
     }
 
     private static int applyEnchantment(CommandContext<ServerCommandSource> ctx, String enchantmentName, int level) {
+
         ServerPlayerEntity player = ctx.getSource().getPlayer();
         ItemStack itemStack = player.getStackInHand(Hand.MAIN_HAND);
 
+        // Make sure player has item in hand
         if (itemStack.isEmpty()) {
             LangManager.send(player, "Invalid-Item-In-Hand");
             return 0;
         }
 
-        Identifier enchantmentId = new Identifier("minecraft", enchantmentName);
-        Enchantment enchantment = Registries.ENCHANTMENT.get(enchantmentId);
+        // Get the enchantment registry using the registry manager and RegistryKey
+        Registry<Enchantment> enchantmentRegistry = ctx.getSource().getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT);
+        Identifier enchantmentId = Identifier.of("minecraft", enchantmentName);
+        Enchantment enchantment = enchantmentRegistry.get(enchantmentId);
+
         if (enchantment == null) {
             LangManager.send(player, "Invalid-Enchantment");
             return 0;
         }
 
+        // Convert the Enchantment to a RegistryEntry<Enchantment>
+        RegistryEntry<Enchantment> enchantmentEntry = enchantmentRegistry.entryOf(enchantmentRegistry.getKey(enchantment).orElseThrow());
+
+        // Permission check
         boolean hasUnrestrictedPermission = Permissions.check(player, ENCHANT_UNRESTRICTED_PERMISSION_NODE, 2);
 
         if (!hasUnrestrictedPermission && (!enchantment.isAcceptableItem(itemStack) || level > enchantment.getMaxLevel())) {
@@ -111,9 +143,18 @@ public class EnchantCommand {
         }
 
         try {
-            Map<Enchantment, Integer> enchantments = EnchantmentHelper.get(itemStack);
-            enchantments.put(enchantment, level);
-            EnchantmentHelper.set(enchantments, itemStack);
+            // Get the current enchantments component
+            ItemEnchantmentsComponent enchantmentsComponent = (ItemEnchantmentsComponent) itemStack.getOrDefault(
+                    DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
+
+            // Create a builder for the enchantments component
+            ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(enchantmentsComponent);
+
+            // Set or update the enchantment level
+            builder.set(enchantmentEntry, level);
+
+            // Apply the updated enchantments back to the item stack
+            itemStack.set(DataComponentTypes.ENCHANTMENTS, builder.build());
 
             Map<String, String> replacements = new HashMap<>();
             replacements.put("{enchantment}", enchantmentName);
@@ -137,18 +178,33 @@ public class EnchantCommand {
             return 0;
         }
 
-        Identifier enchantmentId = new Identifier("minecraft", enchantmentName);
-        Enchantment enchantment = Registries.ENCHANTMENT.get(enchantmentId);
+        // Get the enchantment registry using the registry manager and RegistryKey
+        Registry<Enchantment> enchantmentRegistry = ctx.getSource().getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT);
+        Identifier enchantmentId = Identifier.of("minecraft", enchantmentName);
+        Enchantment enchantment = enchantmentRegistry.get(enchantmentId);
+
         if (enchantment == null) {
             LangManager.send(player, "Invalid-Enchantment");
             return 0;
         }
 
+        // Convert the Enchantment to a RegistryEntry<Enchantment>
+        RegistryEntry<Enchantment> enchantmentEntry = enchantmentRegistry.entryOf(enchantmentRegistry.getKey(enchantment).orElseThrow());
+
         try {
-            Map<Enchantment, Integer> enchantments = EnchantmentHelper.get(itemStack);
-            if (enchantments.containsKey(enchantment)) {
-                enchantments.remove(enchantment);
-                EnchantmentHelper.set(enchantments, itemStack);
+            // Get the current enchantments component
+            ItemEnchantmentsComponent enchantmentsComponent = (ItemEnchantmentsComponent) itemStack.getOrDefault(
+                    DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
+
+            // Create a builder for the enchantments component
+            ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(enchantmentsComponent);
+
+            // Check if the enchantment exists and remove it
+            if (builder.getLevel(enchantmentEntry) > 0) {
+                builder.set(enchantmentEntry, 0);  // Setting the level to 0 removes the enchantment
+
+                // Apply the updated enchantments back to the item stack
+                itemStack.set(DataComponentTypes.ENCHANTMENTS, builder.build());
 
                 Map<String, String> replacements = new HashMap<>();
                 replacements.put("{enchantment}", enchantmentName);

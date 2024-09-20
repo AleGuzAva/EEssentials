@@ -35,8 +35,8 @@ public class TPHereCommand {
                             senderLocation.teleport(target);
 
                             // Send a confirmation message to the sender.
-                            LangManager.send(sender, "TPHere-Success-Sender", Map.of("{target}", target.getEntityName()));
-                            LangManager.send(target, "TPHere-Success-Target", Map.of("{sender}", sender.getEntityName()));
+                            LangManager.send(sender, "TPHere-Success-Sender", Map.of("{target}", target.getNameForScoreboard()));
+                            LangManager.send(target, "TPHere-Success-Target", Map.of("{sender}", sender.getNameForScoreboard()));
 
                             return 1;
                         })

@@ -1,6 +1,9 @@
 package EEssentials.settings;
 
 import EEssentials.config.Configuration;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
@@ -12,9 +15,10 @@ public abstract class RepairSettings {
 
     public static boolean isBlacklisted(ItemStack item) {
         String itemID = Registries.ITEM.getId(item.getItem()).toString();
-        NbtCompound itemNbt = item.getNbt();
+        ComponentMap itemNbt = item.getComponents();
         if (itemNbt != null) {
-            int customModelData = itemNbt.getInt("CustomModelData");
+            CustomModelDataComponent customModelDataComponent = item.get(DataComponentTypes.CUSTOM_MODEL_DATA);
+            int customModelData = customModelDataComponent != null ? customModelDataComponent.value() : 0;
             return blacklistedItems.contains(itemID) || blacklistedItems.contains(itemID + ":" + customModelData);
         } else return blacklistedItems.contains(itemID);
     }

@@ -23,6 +23,8 @@ public class TPACommands {
 
     // Define permission nodes for various commands.
     public static final String TPA_PERMISSION_NODE = "eessentials.tpa";
+    public static final String TPACCEPT_PERMISSION_NODE = "eessentials.tpaccept";
+    public static final String TPACANCEL_PERMISSION_NODE = "eessentials.tpacancel";
     public static final String TPAHERE_PERMISSION_NODE = "eessentials.tpahere";
     public static final String TPTOGGLE_PERMISSION_NODE = "eessentials.tptoggle";
 
@@ -152,6 +154,7 @@ public class TPACommands {
             @Override
             public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher) {
                 return dispatcher.register(CommandManager.literal("tpaccept")
+                        .requires(Permissions.require(TPACCEPT_PERMISSION_NODE, 2))
                         .executes(ctx -> {
                             ServerPlayerEntity target = ctx.getSource().getPlayer();
 
@@ -237,6 +240,7 @@ public class TPACommands {
         // Register /tpacancel
         // Allows a player to cancel an outgoing teleportation request.
         dispatcher.register(CommandManager.literal("tpacancel")
+                .requires(Permissions.require(TPACANCEL_PERMISSION_NODE, 2))
                 .executes(ctx -> {
                     ServerPlayerEntity requester = ctx.getSource().getPlayer();
                     boolean requestCancelled = false;

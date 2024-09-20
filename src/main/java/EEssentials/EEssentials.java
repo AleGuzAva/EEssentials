@@ -139,6 +139,9 @@ public class EEssentials implements ModInitializer {
             if (mainConfig.getBoolean("Commands.enchant", true)) {
                 EnchantCommand.register(dispatcher);
             }
+            if (mainConfig.getBoolean("Commands.enchantmenttable", true)) {
+                EnchantmentTableCommand.register(dispatcher);
+            }
             if (mainConfig.getBoolean("Commands.feed", true)) {
                 FeedCommand.register(dispatcher);
             }
