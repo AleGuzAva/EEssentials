@@ -12,82 +12,60 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.player.PlayerAbilities;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 
 import java.util.Map;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-/**
- * Defines the /speed command to adjust a player's flight speed.
- */
 public class SpeedCommand {
-
-    // Permission node required to adjust speeds.
 
     public static final String SPEED_PERMISSION_NODE = "eessentials.speed.set";
     public static final String FLY_SPEED_PERMISSION_NODE = "eessentials.speed.fly";
     public static final String WALK_SPEED_PERMISSION_NODE = "eessentials.speed.walk";
     public static final String SPEED_OTHER_PERMISSION_NODE = "eessentials.speed.other";
 
+    private static final Identifier SPEED_MODIFIER_ID = Identifier.of("eessentials:movement_speed_boost");
 
-    /**
-     * Registers the "speed" command, which includes subcommands for both flying and walking speeds.
-     *
-     * @param dispatcher The command dispatcher to register commands on.
-     */
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        // Base command
         LiteralArgumentBuilder<ServerCommandSource> speedCommand = literal("speed")
                 .requires(src -> Permissions.check(src, SPEED_PERMISSION_NODE, 2));
 
-        // Subcommand for flying speed
         RequiredArgumentBuilder<ServerCommandSource, Float> speedArgument = argument("speedMultiplier", FloatArgumentType.floatArg(0.1f, 10.0f))
                 .requires(src -> Permissions.check(src, FLY_SPEED_PERMISSION_NODE, 2))
                 .executes(ctx -> executeSetFlightSpeed(ctx, FloatArgumentType.getFloat(ctx, "speedMultiplier")));
 
-        // Add support for an optional target player argument for the fly speed.
         speedArgument.then(argument("target", EntityArgumentType.player())
                 .requires(src -> Permissions.check(src, SPEED_OTHER_PERMISSION_NODE, 2))
-                .executes(ctx -> executeSetFlightSpeed(ctx, FloatArgumentType.getFloat(ctx, "speedMultiplier"))));  // The method will handle finding the target.
+                .executes(ctx -> executeSetFlightSpeed(ctx, FloatArgumentType.getFloat(ctx, "speedMultiplier"))));
 
         speedCommand.then(literal("fly").then(speedArgument));
 
-        // Repeat the same structure for walking speed.
         RequiredArgumentBuilder<ServerCommandSource, Float> walkSpeedArgument = argument("speedMultiplier", FloatArgumentType.floatArg(0.1f, 10.0f))
                 .requires(src -> Permissions.check(src, WALK_SPEED_PERMISSION_NODE, 2))
                 .executes(ctx -> executeSetWalkSpeed(ctx, FloatArgumentType.getFloat(ctx, "speedMultiplier")));
 
         walkSpeedArgument.then(argument("target", EntityArgumentType.player())
                 .requires(src -> Permissions.check(src, SPEED_OTHER_PERMISSION_NODE, 2))
-                .executes(ctx -> executeSetWalkSpeed(ctx, FloatArgumentType.getFloat(ctx, "speedMultiplier"))));  // The method will handle finding the target.
+                .executes(ctx -> executeSetWalkSpeed(ctx, FloatArgumentType.getFloat(ctx, "speedMultiplier"))));
 
         speedCommand.then(literal("walk").then(walkSpeedArgument));
-
-        // Register the constructed command
         dispatcher.register(speedCommand);
     }
 
-
-
-    /**
-     * Executes the command to set the target player's flight speed.
-     *
-     * @param ctx The command context.
-     * @param speedMultiplier The multiplier for the flight speed (typically between 0.1 and 5).
-     * @return Returns 1 to indicate the command executed successfully.
-     */
     private static int executeSetFlightSpeed(CommandContext<ServerCommandSource> ctx, float speedMultiplier) {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        // Adjust the flight speed
-        ((PlayerAbilitiesMixin) player.getAbilities()).setFlySpeed(0.05f * speedMultiplier);
+        // Access the player's abilities using the accessor
+        PlayerAbilities abilities = player.getAbilities();
+        ((PlayerAbilitiesMixin) abilities).setFlySpeed(0.05f * speedMultiplier);
         player.sendAbilitiesUpdate();
 
-        // Send appropriate messages
         Map<String, String> replacements = Map.of(
                 "{speed-option}", "flight",
                 "{speed-multiplier}", String.valueOf(speedMultiplier),
@@ -98,32 +76,24 @@ public class SpeedCommand {
         return 1;
     }
 
-    /**
-     * Executes the command to set the target player's walking speed.
-     *
-     * @param ctx The command context.
-     * @param speedMultiplier The multiplier for the walking speed (typically between 0.1 and 5).
-     * @return Returns 1 to indicate the command executed successfully.
-     */
     private static int executeSetWalkSpeed(CommandContext<ServerCommandSource> ctx, float speedMultiplier) {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        // Adjust the walking speed
-        // ((PlayerAbilitiesMixin) player.getAbilities()).setWalkSpeed(0.1f * speedMultiplier);
-        // player.sendAbilitiesUpdate();
-
-        // Instead of directly changing the player's speed, this will add a modifier to the player's speed attribute.
-        // Will interfere with mods that also use this method to change speed and use the same UUID.
         if (player == null) return 1;
-        EntityAttributeInstance attribute = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED); // Get current speed attribute
-        EntityAttributeModifier modifier = new EntityAttributeModifier(player.getUuid(), "Movement Speed Boost",  speedMultiplier - 1, EntityAttributeModifier.Operation.MULTIPLY_BASE); // Create new modifier with player UUID
-
+        EntityAttributeInstance attribute = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
         if (attribute == null) return 1;
-        attribute.removeModifier(player.getUuid()); // Remove previous modifier
-        attribute.addPersistentModifier(modifier); // Add modifier with new speed
 
-        // Send appropriate messages
+        EntityAttributeModifier modifier = new EntityAttributeModifier(
+                SPEED_MODIFIER_ID,
+                speedMultiplier - 1,
+                EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+        );
+
+
+        attribute.removeModifier(SPEED_MODIFIER_ID);
+        attribute.addPersistentModifier(modifier);
+
         Map<String, String> replacements = Map.of(
                 "{speed-option}", "walking",
                 "{speed-multiplier}", String.valueOf(speedMultiplier),
@@ -133,7 +103,4 @@ public class SpeedCommand {
 
         return 1;
     }
-
-
-
 }

@@ -37,7 +37,9 @@ public class SpawnCommands {
                     ServerPlayerEntity player = ctx.getSource().getPlayer();
                     if (player == null) return 0;
 
-                    EEssentials.storage.locationManager.setSpawn(Location.fromPlayer(player));
+                    // Use these values to create the new Location
+                    Location spawnLocation = new Location(player.getServerWorld(), player.getX(), player.getY(), player.getZ(), player.getPitch(), player.getYaw());
+                    EEssentials.storage.locationManager.setSpawn(spawnLocation);
                     LangManager.send(player, "Spawn-Set");
                     return 1;
                 })

@@ -170,6 +170,8 @@ Hat-Blacklisted-Message: "<red>You can't put this item on your head!"
 # Repair
 Repair-Invalid: "<red>You can not repair this item!"
 Repair-Success: "<gold>You have repaired this item!"
+Repair-All-Success: "<gold>You have repaired all valid items in your inventory!"
+Repair-All-No-Valid-Items: "<red>You don't have any valid repairable items!"
 
 # RTP
 RTP-Cooldown-Message: "<red>You can't RTP in this world for another {cooldown} seconds!"
