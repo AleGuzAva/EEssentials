@@ -18,7 +18,9 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 import static net.minecraft.server.command.CommandManager.argument;
 
@@ -31,6 +33,8 @@ public class MessageCommands {
     private static final String MESSAGE_PERMISSION_NODE = "eessentials.msg";
 
     private static final Map<ServerPlayerEntity, ServerPlayerEntity> lastMessageSenders = new HashMap<>();
+    private static SocialSpyCallback socialSpyCallback;
+
 
     public static void storeLastSender(ServerPlayerEntity recipient, ServerPlayerEntity sender) {
         lastMessageSenders.put(recipient, sender);
@@ -107,6 +111,8 @@ public class MessageCommands {
 
         // Fetch and format the Social Spy message using LangManager
         String socialSpyMessage = LangManager.getLang("Prefix-Social-Spy");
+        List<ServerPlayerEntity> spies = new ArrayList<>();
+
         if (socialSpyMessage != null) {
             // Replace placeholders in the Social Spy message
             for (Map.Entry<String, String> entry : replacements.entrySet()) {
@@ -125,8 +131,13 @@ public class MessageCommands {
                 if (SocialSpyCommand.isSocialSpyEnabled(spy)) {
                     // Use Adventure's Audience to send the message
                     spy.sendMessage(componentMessage);
+                    spies.add(spy);
                 }
             }
+        }
+
+        if (socialSpyCallback != null) {
+            socialSpyCallback.onMessageSentToSpies(sender, receiver, message, spies);
         }
     }
 
@@ -206,6 +217,15 @@ public class MessageCommands {
 
     private static boolean isPlayerOnline(MinecraftServer server, ServerPlayerEntity player) {
         return server.getPlayerManager().getPlayer(player.getUuid()) != null;
+    }
+
+    // Callback Stuff
+    public interface SocialSpyCallback {
+        void onMessageSentToSpies(ServerPlayerEntity sender, ServerPlayerEntity receiver, String message, List<ServerPlayerEntity> spies);
+    }
+
+    public static void setSocialSpyCallback(SocialSpyCallback callback) {
+        socialSpyCallback = callback;
     }
 
 }
