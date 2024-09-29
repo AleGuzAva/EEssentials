@@ -86,7 +86,7 @@ public class SeenCommand {
         return 1;
     }
 
-    private static GameProfile getProfileForName(String name) {
+    static GameProfile getProfileForName(String name) {
         File[] files = StorageManager.playerStorageDirectory.toFile().listFiles();
         if (files != null) {
             for (File file : files) {
@@ -108,7 +108,7 @@ public class SeenCommand {
      * @param duration The duration to format.
      * @return The formatted string.
      */
-    private static String formatDuration(Duration duration) {
+    public static String formatDuration(Duration duration) {
         long days = duration.toDays();
         long hours = duration.toHours() % 24;
         long minutes = duration.toMinutes() % 60;

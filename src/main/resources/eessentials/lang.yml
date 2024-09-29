@@ -138,7 +138,7 @@ Seen: "<gold>Player <red>{player} <gold>was last seen {last-seen-time} ago."
 Seen-Online: "<gold>Player <red>{player} <gold>is currently online."
 CheckTime: "<gold>Current World Time: <red>{world-time}"
 Playtime: "<gold>Your playtime: <red>{playtime}"
-Playtime-Other: "<gold>{player}'s playtime: <red>{playtime}"
+Playtime-Other: "<red>{player}'s <gold>playtime: <red>{playtime}"
 
 # Ascend
 Ascend-Location-Not-Found: "<red>No place to ascend to!"
