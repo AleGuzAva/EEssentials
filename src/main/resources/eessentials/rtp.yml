@@ -1,5 +1,5 @@
 # DON'T TOUCH Config-Version OR THINGS WILL BREAK
-Config-Version: 1.1.0
+Config-Version: 2.2.0
 Random-Teleport:
   Max-Attempts: 10
   # How many attempts the plugin will take to find a safe location for a player to teleport to before giving up.

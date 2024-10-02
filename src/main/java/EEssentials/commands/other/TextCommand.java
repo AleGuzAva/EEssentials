@@ -1,7 +1,7 @@
 package EEssentials.commands.other;
 
 import EEssentials.EEssentials;
-import EEssentials.util.ColorUtil;
+import EEssentials.lang.ColorUtil;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import eu.pb4.placeholders.api.PlaceholderContext;
@@ -66,4 +66,34 @@ public class TextCommand {
             return Component.text("Failed to find the text file! Contact an administrator.");
         }
     }
+    public static Component getMotd(ServerCommandSource source) {
+        try {
+            // Get the correct path for the MOTD file within the text-commands directory
+            File motdFile = new File(EEssentials.INSTANCE.getConfigFolder(), "text-commands/motd.txt");
+
+            // Check if the file exists, if not return an empty message
+            if (!motdFile.exists()) {
+                return Component.text("");
+            }
+
+            // Create a PlaceholderContext from the source
+            PlaceholderContext context = PlaceholderContext.of(source);
+
+            // Read the MOTD content from the file
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(motdFile));
+            Component completeText = Component.empty();
+            String textLine;
+            while ((textLine = bufferedReader.readLine()) != null) {
+                // Parse placeholders first, then apply color formatting if needed
+                Text placeholderParsedText = Placeholders.parseText(Text.literal(textLine), context);
+                Component lineComponent = ColorUtil.parseColour(placeholderParsedText.getString());
+
+                completeText = completeText.append(lineComponent).append(Component.newline());
+            }
+            return completeText;
+        } catch (IOException e) {
+            return Component.text("Failed to find the MOTD file! Contact an administrator.");
+        }
+    }
+
 }

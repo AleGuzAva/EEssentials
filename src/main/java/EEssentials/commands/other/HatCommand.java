@@ -3,7 +3,7 @@ package EEssentials.commands.other;
 import EEssentials.commands.AliasedCommand;
 import EEssentials.lang.LangManager;
 import EEssentials.settings.HatSettings;
-import EEssentials.util.ColorUtil;
+import EEssentials.lang.ColorUtil;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;

@@ -27,6 +27,7 @@ public class PlayerStorage {
     public Boolean socialSpyFlag = false;
     private Location previousLocation = null;
     private Location logoutLocation = null;
+    private int totalPlaytime = 0;
     private Instant lastTimeOnline = Instant.now();
     public List<String> modImports = new ArrayList<>();
 
@@ -131,6 +132,14 @@ public class PlayerStorage {
         return this.logoutLocation;
     }
 
+    public int getTotalPlaytime() {
+        return totalPlaytime;
+    }
+
+    public void setTotalPlaytime(int totalPlaytime) {
+        this.totalPlaytime = totalPlaytime;
+        this.save();
+    }
     public void setLastTimeOnline() {
         this.lastTimeOnline = Instant.now();
         this.save();
@@ -154,6 +163,7 @@ public class PlayerStorage {
             jsonObject.add("homes", gson.toJsonTree(homes));
             jsonObject.add("previousLocation", gson.toJsonTree(previousLocation));
             jsonObject.add("logoutLocation", gson.toJsonTree(logoutLocation));
+            jsonObject.addProperty("totalPlaytime", totalPlaytime);
             jsonObject.add("lastTimeOnline", gson.toJsonTree(lastTimeOnline.toString()));
             jsonObject.addProperty("socialSpyFlag", socialSpyFlag);
             jsonObject.add("modImports", gson.toJsonTree(modImports));
@@ -202,6 +212,13 @@ public class PlayerStorage {
             if (jsonObject.has("logoutLocation")) {
                 logoutLocation = gson.fromJson(jsonObject.get("logoutLocation"), Location.class);
             } else {
+                requiresSave = true;
+            }
+
+            if (jsonObject.has("totalPlaytime")) {
+                totalPlaytime = jsonObject.get("totalPlaytime").getAsInt();
+            } else {
+                totalPlaytime = 0;  // Default playtime for older files
                 requiresSave = true;
             }
 

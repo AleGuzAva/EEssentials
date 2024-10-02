@@ -1,7 +1,6 @@
 package EEssentials.lang;
 
 import EEssentials.config.Configuration;
-import EEssentials.util.ColorUtil;
 import net.kyori.adventure.audience.Audience;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

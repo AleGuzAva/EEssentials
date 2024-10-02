@@ -12,11 +12,7 @@ import EEssentials.settings.RepairSettings;
 import EEssentials.settings.randomteleport.RTPSettings;
 import EEssentials.storage.PlayerStorage;
 import EEssentials.storage.StorageManager;
-import EEssentials.util.Location;
-import EEssentials.util.AsynchronousUtil;
-import EEssentials.util.TeleportUtil;
-import EEssentials.util.AFKManager;
-import EEssentials.util.PermissionHelper;
+import EEssentials.util.*;
 import EEssentials.util.importers.EssentialCommandsImporter;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -25,9 +21,12 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPermsProvider;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.stat.Stats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,6 +97,9 @@ public class EEssentials implements ModInitializer {
         // Register player connection event listeners.
         registerConnectionEventListeners();
 
+        // Register Placeholders //TODO: It's midnight, u can change this to be more consistent with the other registers another time
+        PlaceholderRegister.RegisterPlaceholders();
+
         // Tells the asynchronous executor to shut down when the server does to not have hanging threads.
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> AsynchronousUtil.shutdown());
     }
@@ -123,6 +125,9 @@ public class EEssentials implements ModInitializer {
             }
             if (mainConfig.getBoolean("Commands.biomertp", true)) {
                 BiomeRTPCommand.register(dispatcher, registryAccess);
+            }
+            if (mainConfig.getBoolean("Commands.broadcast", true)) {
+                BroadcastCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.time", true)) {
                 CheckTimeCommand.register(dispatcher);
@@ -178,6 +183,9 @@ public class EEssentials implements ModInitializer {
             }
             if (mainConfig.getBoolean("Commands.near", true)) {
                 NearCommand.register(dispatcher);
+            }
+            if (mainConfig.getBoolean("Commands.nightvision", true)) {
+                NightVisionCommand.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.playtime", true)) {
                 PlaytimeCommand.register(dispatcher);
@@ -297,6 +305,8 @@ public class EEssentials implements ModInitializer {
         ServerPlayConnectionEvents.DISCONNECT.register((ServerPlayNetworkHandler handler, MinecraftServer server) -> {
             PlayerStorage storage = EEssentials.storage.getPlayerStorage(handler.player);
             if (storage != null) {
+                int currentPlaytime = handler.player.getStatHandler().getStat(Stats.CUSTOM.getOrCreateStat(Stats.PLAY_TIME));
+                storage.setTotalPlaytime(currentPlaytime);
                 Location currentLogoutLocation = Location.fromPlayer(handler.player);
                 storage.setLogoutLocation(currentLogoutLocation);
                 storage.setLastTimeOnline();
@@ -331,6 +341,15 @@ public class EEssentials implements ModInitializer {
             // Reset AFK timers for the joining player.
             AFKManager.setAFK(handler.player, false, false);
             AFKManager.resetActivity(handler.player);
+
+            ServerCommandSource source = handler.player.getCommandSource();
+
+            // Send the MOTD to the player when they join
+            Component motdComponent = TextCommand.getMotd(source);
+            // Send only if the MOTD is not empty
+            if (!motdComponent.equals(Component.text(""))) {
+                handler.player.sendMessage(motdComponent);
+            }
         });
     }
 
@@ -374,7 +393,7 @@ public class EEssentials implements ModInitializer {
         langConfig = getConfig("lang.yml");
 
         // Update config and lang files
-        ConfigVersionUpdater updater = new ConfigVersionUpdater(mainConfig, langConfig, "1.1.0");
+        ConfigVersionUpdater updater = new ConfigVersionUpdater(mainConfig, langConfig, "2.2.0");
         updater.updateConfig();
 
         if (rtpSection != null) {
