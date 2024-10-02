@@ -1,5 +1,5 @@
 # DON'T TOUCH Config-Version OR THINGS WILL BREAK
-Config-Version: 1.1.0
+Config-Version: 2.2.0
 # We Support Legacy and MiniMessage Formatting!
 # Errors
 Invalid-Player: "<red>Error: Player not found."
@@ -66,9 +66,11 @@ TPA-Request-Receive: "<red>{requester} <gold>has requested to teleport to you.\n
 TPA-Request-Self: "<red>You can not send a teleport request to yourself."
 TPAHere-Request-Send: "<gold>You have sent a request for <red>{target} <gold>to teleport to you."
 TPAHere-Request-Receive: "<red>{requester} <gold>wants you to teleport to them. Use /tpaccept to allow."
-TPA-Receiver-Timeout: "<red>{requester}'s <gold>teleport request has timed out."
-TPA-Requester-Timeout: "<red>Your teleport request to <gold>{target} <red>has timed out."
+TPA-Receiver-Timeout: "<dark_red>{requester}'s <red>teleport request has timed out."
+TPA-Requester-Timeout: "<red>Your teleport request to <dark_red>{receiver} <red>has timed out."
 TPA-Request-None: "<red>You do not have any active teleport requests."
+TPA-Cancel-Self: "<gold>You have cancelled the teleport request to <red>{target}<gold>."
+TPA-Cancel-Target: "<red>{requester} <gold>cancelled their teleport request."
 TPA-Accept: "<gold>Teleport request accepted."
 TPA-Deny: "<gold>Teleport request denied."
 
@@ -119,6 +121,7 @@ Speed: "<gold>Set <red>{speed-option} <gold>speed to <red>{speed-multiplier} <go
 GameMode-Change-Self: "<gold>Your game mode has been set to <red>{gameMode}<gold> Mode."
 GameMode-Change-Other: "<gold>Set <red>{player}'s<gold> game mode to <red>{gameMode}<gold> Mode."
 GameMode-Change-Other-Notify: "<gold>Your game mode has been set to <red>{gameMode}<gold> Mode by <red>{source}."
+Broadcast-Prefix: "<gold>[<dark_red>Broadcast<gold>] <green>"
 
 # Flight
 Flight-Enabled-Self: "<gold>Flight ability enabled."
@@ -127,6 +130,14 @@ Flight-Enabled-Other: "<gold>Flight ability enabled by <red>{source}<gold>."
 Flight-Disabled-Other: "<gold>Flight ability disabled by <red>{source}<gold>."
 Flight-Enabled-Other-Notify: "<gold>Enabled flight ability for <red>{player}<gold>."
 Flight-Disabled-Other-Notify: "<gold>Disabled flight ability for <red>{player}<gold>."
+
+# Night Vision
+NightVision-Enabled-Self: "<gold>Night vision enabled."
+NightVision-Disabled-Self: "<gold>Night vision disabled."
+NightVision-Enabled-Other: "<gold>Night vision enabled by <red>{source}<gold>."
+NightVision-Disabled-Other: "<gold>Night vision disabled by <red>{source}<gold>."
+NightVision-Enabled-Other-Notify: "<gold>Enabled night vision for <red>{player}<gold>."
+NightVision-Disabled-Other-Notify: "<gold>Disabled night vision for <red>{player}<gold>."
 
 # Speed
 Speed-Set-Self: "<gold>Set <red>{speed-option} <gold>speed to <red>{speed-multiplier}<gold>x."

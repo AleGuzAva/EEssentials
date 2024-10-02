@@ -254,7 +254,8 @@ public class TPACommands {
                             if (requests.get(i).requester.equals(requester)) {
                                 requests.remove(i);
                                 requestCancelled = true;
-                                LangManager.send(requester, "TPA-Cancel", Map.of("{target}", entry.getKey().getName().getString()));
+                                LangManager.send(requester, "TPA-Cancel-Self", Map.of("{target}", entry.getKey().getName().getString()));
+                                LangManager.send(entry.getKey(), "TPA-Cancel-Target", Map.of("{requester}", requester.getName().getString()));
                                 if (requests.isEmpty()) {
                                     teleportRequests.remove(entry.getKey());
                                 }

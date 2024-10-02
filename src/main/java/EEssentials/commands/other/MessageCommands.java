@@ -2,7 +2,7 @@ package EEssentials.commands.other;
 
 import EEssentials.commands.AliasedCommand;
 import EEssentials.lang.LangManager;
-import EEssentials.util.ColorUtil;
+import EEssentials.lang.ColorUtil;
 import EEssentials.util.IgnoreManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -153,29 +153,43 @@ public class MessageCommands {
 
     private static int sendMessage(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity target, String message) {
         ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player = source.getPlayer();
+        String senderName;
+        ServerPlayerEntity player = null;
+        boolean isConsole = !(source.getEntity() instanceof ServerPlayerEntity);
 
-        if (player == null || target == null) return 0;
+        // did this so people can use console to message
+        if (isConsole) {
+            senderName = "Console";
+        } else {
+            player = (ServerPlayerEntity) source.getEntity();
+            senderName = player.getName().getString();
+        }
 
+        // Prepare replacements for the message
         Map<String, String> replacements = new HashMap<>();
         replacements.put("{receiver}", target.getName().getString());
-        replacements.put("{sender}", player.getName().getString());
+        replacements.put("{sender}", senderName);
         replacements.put("{message}", message);
 
-        // Check if the target has ignored the sender
-        if (IgnoreManager.hasIgnored(target, player)) {
-            LangManager.send(player, "Ignore", replacements); // Update this line with the correct lang key
+        // Check if the target has ignored them
+        if (!isConsole && IgnoreManager.hasIgnored(target, player)) {
+            LangManager.send(player, "Ignore", replacements);
             return 1;
         }
 
+        // Send messages to both the target and the sender
         LangManager.send(target, "Message-Receive", replacements);
-        LangManager.send(player, "Message-Send", replacements);
+        LangManager.send(source, "Message-Send", replacements);
 
         // Social Spy
-        sendToSocialSpies(ctx, player, target, message);
+        if (!isConsole) {
+            sendToSocialSpies(ctx, player, target, message);
+        }
 
         // Store this interaction so that the target can reply back
-        storeLastSender(target, player);
+        if (!isConsole) {
+            storeLastSender(target, player);
+        }
 
         return 1;
     }
@@ -185,6 +199,13 @@ public class MessageCommands {
         ServerPlayerEntity player = source.getPlayer();
 
         ServerPlayerEntity target = lastMessageSenders.get(player);
+
+
+        // Check if the target is null or the player is no longer online
+        if (target == null || !isPlayerOnline(ctx.getSource().getServer(), target)) {
+            LangManager.send(player, "No-Reply-Target");
+            return 0;
+        }
 
         // Check if the target has ignored the sender
         if (IgnoreManager.hasIgnored(target, player)) {
@@ -197,19 +218,13 @@ public class MessageCommands {
         replacements.put("{sender}", player.getName().getString());
         replacements.put("{message}", message);
 
-        // Check if the target player is still online
-        if (!isPlayerOnline(ctx.getSource().getServer(), target)) {
-            LangManager.send(player, "No-Reply-Target");
-            return 0;
-        }
-
         LangManager.send(player, "Message-Send", replacements);
         LangManager.send(target, "Message-Receive", replacements);
 
         // Social Spy
         sendToSocialSpies(ctx, player, target, message);
 
-        // Update the last sender for potential back-and-forth replies
+        // Update the last sender for back-and-forth replies
         storeLastSender(target, player);
 
         return 1;
