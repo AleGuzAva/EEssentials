@@ -31,6 +31,19 @@ public class ConfigVersionUpdater {
 
             mainConfig.set("Config-Version", currentVersion);
 
+            if (!mainConfig.contains("Commands.broadcast")) {
+                mainConfig.set("Commands.broadcast", true);
+            }
+            if (!mainConfig.contains("Commands.enchantmenttable")) {
+                mainConfig.set("Commands.enchantmenttable", true);
+            }
+            if (!mainConfig.contains("Commands.mail")) {
+                mainConfig.set("Commands.mail", true);
+            }
+            if (!mainConfig.contains("Commands.nightvision")) {
+                mainConfig.set("Commands.nightvision", true);
+            }
+
             try {
                 // Save the config with comments
                 saveConfigWithComments(mainConfig, "eessentials/config.yml", new File("config/EEssentials/config.yml"));
