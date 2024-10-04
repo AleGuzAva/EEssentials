@@ -40,8 +40,18 @@ public class ReloadCommand {
     private static int reloadConfigurations(CommandContext<ServerCommandSource> ctx) {
         ServerCommandSource source = ctx.getSource();
         try {
+            // Reloads config, rtp, and lang.yml
             EEssentials.INSTANCE.configManager();
-            source.sendMessage(Text.literal("Configurations reloaded successfully."));
+
+            // Reload Locations.json separately after the server is up and running
+            if (EEssentials.storage.locationManager != null) {
+                EEssentials.storage.locationManager.load();
+                source.sendMessage(Text.literal("Configurations reloaded successfully."));
+                EEssentials.LOGGER.info("Configurations and Locations.json reloaded successfully.");
+            } else {
+                source.sendMessage(Text.literal("Failed to reload Locations.json. LocationManager is null."));
+                EEssentials.LOGGER.warn("Failed to reload Locations.json. LocationManager is null.");
+            }
             return 1;
         } catch (Exception e) {
             source.sendMessage(Text.literal("Error occurred while reloading configurations."));

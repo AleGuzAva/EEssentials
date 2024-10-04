@@ -21,6 +21,7 @@ Commands:
   heal: true
   ignore: true
   itemeditor: true
+  mail: false
   message: true # Contains /msg, /reply, /socialspy
   near: true
   nightvision: true

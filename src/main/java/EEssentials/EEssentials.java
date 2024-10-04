@@ -102,6 +102,7 @@ public class EEssentials implements ModInitializer {
 
         // Tells the asynchronous executor to shut down when the server does to not have hanging threads.
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> AsynchronousUtil.shutdown());
+
     }
 
     /**
@@ -176,6 +177,9 @@ public class EEssentials implements ModInitializer {
             }
             if (mainConfig.getBoolean("Commands.gm", true)) {
                 GamemodeAliasesCommands.register(dispatcher); // includes /gma, /gmc, /gms, /gmsp
+            }
+            if (mainConfig.getBoolean("Commands.mail", true)) {
+                MailCommands.register(dispatcher);
             }
             if (mainConfig.getBoolean("Commands.message", true)) {
                 MessageCommands.register(dispatcher); // includes /msg, /reply
@@ -258,6 +262,14 @@ public class EEssentials implements ModInitializer {
             setupPermissions();
             EEssentials.server = server;
             storage.serverStarted();
+
+            // Load Locations.json after the server has started
+            if (storage.locationManager != null) {
+                storage.locationManager.load();
+                LOGGER.info("Locations.json loaded successfully.");
+            } else {
+                LOGGER.warn("locationManager is null, cannot load Locations.json");
+            }
 
             // Read the EssentialCommands import toggle from the configuration
             boolean ECImportFlag = mainConfig.getBoolean("Importers.EssentialCommands", false);
