@@ -16,11 +16,14 @@ public class EnderchestScreen implements NamedScreenHandlerFactory {
 
     @Override
     public Text getDisplayName() {
-        return Text.of("Ender Chest");
+        return Text.translatable("container.enderchest");
     }
 
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
+        if (targetPlayer.getEnderChestInventory().size() == 54) {
+            return GenericContainerScreenHandler.createGeneric9x6(syncId, inv, targetPlayer.getEnderChestInventory());
+        }
         return GenericContainerScreenHandler.createGeneric9x3(syncId, inv, targetPlayer.getEnderChestInventory());
     }
 }
