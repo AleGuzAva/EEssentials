@@ -38,6 +38,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The main class for the EEssentials mod, responsible for mod initialization and other lifecycle events.
@@ -259,30 +262,37 @@ public class EEssentials implements ModInitializer {
      */
     private void registerServerStartListeners() {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            setupPermissions();
-            EEssentials.server = server;
-            storage.serverStarted();
+            // Schedule a task with a 2-second delay
+            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+            scheduler.schedule(() -> {
+                setupPermissions();
+                EEssentials.server = server;
+                storage.serverStarted();
 
-            // Load Locations.json after the server has started
-            if (storage.locationManager != null) {
-                storage.locationManager.load();
-                LOGGER.info("Locations.json loaded successfully.");
-            } else {
-                LOGGER.warn("locationManager is null, cannot load Locations.json");
-            }
+                // Load Locations.json after the server has started
+                if (storage.locationManager != null) {
+                    storage.locationManager.load();
+                    LOGGER.info("Locations.json loaded successfully.");
+                } else {
+                    LOGGER.warn("locationManager is null, cannot load Locations.json");
+                }
 
-            // Read the EssentialCommands import toggle from the configuration
-            boolean ECImportFlag = mainConfig.getBoolean("Importers.EssentialCommands", false);
+                // Read the EssentialCommands import toggle from the configuration
+                boolean ECImportFlag = mainConfig.getBoolean("Importers.EssentialCommands", false);
 
-            if (ECImportFlag && !storage.locationManager.modImports.contains("essential_commands")) {
-                LOGGER.info("Importing World Data from Essential Commands...");
-                EssentialCommandsImporter.loadEssentialCommandsWorldData();
-                LOGGER.info("Imported World Data from Essential Commands.");
-                storage.locationManager.modImports.add("essential_commands");
-                storage.locationManager.save();
-            } else {
-                LOGGER.info("Importing from Essential Commands is disabled in the configuration.");
-            }
+                if (ECImportFlag && !storage.locationManager.modImports.contains("essential_commands")) {
+                    LOGGER.info("Importing World Data from Essential Commands...");
+                    EssentialCommandsImporter.loadEssentialCommandsWorldData();
+                    LOGGER.info("Imported World Data from Essential Commands.");
+                    storage.locationManager.modImports.add("essential_commands");
+                    storage.locationManager.save();
+                } else {
+                    LOGGER.info("Importing from Essential Commands is disabled in the configuration.");
+                }
+            }, 2, TimeUnit.SECONDS);
+
+            // Shutdown the scheduler after the task is completed
+            scheduler.shutdown();
         });
     }
 
