@@ -1,5 +1,5 @@
 # DON'T TOUCH Config-Version OR THINGS WILL BREAK
-Config-Version: 2.2.0
+Config-Version: 2.2.1
 # Disable/Enable Command Modules:
 # Useful if you don't want a certain command on your server or if another mod handles a certain command
 Commands:

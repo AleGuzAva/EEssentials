@@ -345,31 +345,36 @@ public class EEssentials implements ModInitializer {
 
         // Actions to perform when a player joins the server.
         ServerPlayConnectionEvents.JOIN.register((ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) -> {
+            // Retrieve player storage
             PlayerStorage storage = EEssentials.storage.getPlayerStorage(handler.player.getUuid());
-            if (storage != null) {
-                storage.setPlayerName(handler.player.getName().getString()); // Set the player's name
-                if (!storage.playedBefore) {
-                    storage.playedBefore = true; // Mark as having played before
-                    Location spawn = EEssentials.storage.locationManager.serverSpawn;
-                    if (spawn != null) {
-                        spawn.teleport(handler.player);
-                    }
-                }
-                storage.save(); // Save the updated storage
-            } else {
-                EEssentials.LOGGER.warn("PlayerStorage not found on join for player: " + handler.player.getName().getString());
+            if (storage == null) {
+                EEssentials.LOGGER.warn("PlayerStorage not found for player: " + handler.player.getName().getString());
+                return; // Stop execution if storage is null
             }
 
-            // Reset AFK timers for the joining player.
+            // Update player's name in storage
+            storage.setPlayerName(handler.player.getName().getString());
+
+            // Handle first-time join logic
+            if (!storage.playedBefore) {
+                storage.playedBefore = true; // Mark as joined before
+                Location spawn = EEssentials.storage.locationManager.serverSpawn;
+                if (spawn != null) {
+                    spawn.teleport(handler.player);
+                }
+            }
+
+            // Save player storage
+            storage.save();
+
+            // Reset AFK timers
             AFKManager.setAFK(handler.player, false, false);
             AFKManager.resetActivity(handler.player);
 
+            // Send MOTD if available
             ServerCommandSource source = handler.player.getCommandSource();
-
-            // Send the MOTD to the player when they join
             Component motdComponent = TextCommand.getMotd(source);
-            // Send only if the MOTD is not empty
-            if (!motdComponent.equals(Component.text(""))) {
+            if (motdComponent != null && !motdComponent.toString().isEmpty()) {
                 handler.player.sendMessage(motdComponent);
             }
         });
@@ -415,7 +420,7 @@ public class EEssentials implements ModInitializer {
         langConfig = getConfig("lang.yml");
 
         // Update config and lang files
-        ConfigVersionUpdater updater = new ConfigVersionUpdater(mainConfig, langConfig, "2.2.0");
+        ConfigVersionUpdater updater = new ConfigVersionUpdater(mainConfig, langConfig, "2.2.1");
         updater.updateConfig();
 
         if (rtpSection != null) {
