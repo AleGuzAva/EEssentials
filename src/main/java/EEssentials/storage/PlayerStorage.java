@@ -38,11 +38,19 @@ public class PlayerStorage {
      */
     public PlayerStorage(UUID uuid) {
         this.playerUUID = uuid;
-        this.playedBefore = false;
-        this.lastTimeOnline = Instant.now();
-        this.load();
-    }
 
+        // Determine whether the player has played before based on the file
+        File file = getSaveFile();
+        this.playedBefore = file.exists();
+
+        // Always initialize lastTimeOnline
+        this.lastTimeOnline = Instant.now();
+
+        // Load existing data if the file exists
+        if (file.exists()) {
+            this.load();
+        }
+    }
 
     /**
      * Fetch player storage for a given online player entity.
@@ -77,13 +85,7 @@ public class PlayerStorage {
      * @return the storage file.
      */
     public File getSaveFile() {
-        File file = EEssentials.storage.playerStorageDirectory.resolve(playerUUID.toString() + ".json").toFile();
-        try {
-            playedBefore = !file.createNewFile();
-        } catch (IOException e) {
-            EEssentials.LOGGER.error("Failed to create file for PlayerStorage /w UUID: " + playerUUID.toString());
-        }
-        return file;
+        return EEssentials.storage.playerStorageDirectory.resolve(playerUUID.toString() + ".json").toFile();
     }
 
     /**
@@ -155,11 +157,24 @@ public class PlayerStorage {
      * Save player data to storage.
      */
     public void save() {
+        File file = getSaveFile();
+        // Create the file if it does not exist
+        if (!file.exists()) {
+            try {
+                if (file.createNewFile()) {
+                    EEssentials.LOGGER.info("Created new PlayerStorage file for UUID: " + playerUUID.toString());
+                }
+            } catch (IOException e) {
+                EEssentials.LOGGER.error("Failed to create file for UUID: " + playerUUID.toString(), e);
+                return; // Exit if the file cannot be created
+            }
+        }
+
         Gson gson = createCustomGson();
 
-        try (Writer writer = new FileWriter(getSaveFile())) {
+        try (Writer writer = new FileWriter(file)) { // Use the file object directly here
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("playerName", playerName);  // Save the player name
+            jsonObject.addProperty("playerName", playerName); // Save the player name
             jsonObject.add("homes", gson.toJsonTree(homes));
             jsonObject.add("previousLocation", gson.toJsonTree(previousLocation));
             jsonObject.add("logoutLocation", gson.toJsonTree(logoutLocation));
@@ -167,7 +182,7 @@ public class PlayerStorage {
             jsonObject.add("lastTimeOnline", gson.toJsonTree(lastTimeOnline.toString()));
             jsonObject.addProperty("socialSpyFlag", socialSpyFlag);
             jsonObject.add("modImports", gson.toJsonTree(modImports));
-            gson.toJson(jsonObject, writer);
+            gson.toJson(jsonObject, writer); // Write the JSON to the file
         } catch (IOException e) {
             EEssentials.LOGGER.error("Failed to save data for UUID: " + playerUUID.toString(), e);
         }
