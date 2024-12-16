@@ -1,5 +1,5 @@
 # DON'T TOUCH Config-Version OR THINGS WILL BREAK
-Config-Version: 2.2.0
+Config-Version: 2.2.1
 # We Support Legacy and MiniMessage Formatting!
 # Errors
 Invalid-Player: "<red>Error: Player not found."

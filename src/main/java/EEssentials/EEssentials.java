@@ -420,7 +420,7 @@ public class EEssentials implements ModInitializer {
         langConfig = getConfig("lang.yml");
 
         // Update config and lang files
-        ConfigVersionUpdater updater = new ConfigVersionUpdater(mainConfig, langConfig, "2.2.0");
+        ConfigVersionUpdater updater = new ConfigVersionUpdater(mainConfig, langConfig, "2.2.1");
         updater.updateConfig();
 
         if (rtpSection != null) {
